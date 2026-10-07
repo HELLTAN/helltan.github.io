@@ -134,6 +134,12 @@ img.ts-logo{width:min(420px,90vw);height:auto;display:block;mix-blend-mode:scree
 .end-rank.ok{color:var(--steel)}
 .end-rank.poser{color:var(--obi-red)}
 .end-msg{font-size:13px;line-height:1.9;text-align:center;max-width:340px}
+.meigen{width:min(380px,94vw);border:1px dashed #4a3d22;border-radius:3px;padding:10px 14px;background:#1A1512;text-align:left}
+.meigen .mg-label{font-size:10px;color:var(--gold);font-weight:900;letter-spacing:.18em;margin-bottom:6px}
+.meigen .mg-you{font-size:13px;color:var(--steel);line-height:1.65}
+.meigen .mg-npc{font-size:13px;color:var(--obi-red);font-weight:700;line-height:1.65;margin-top:4px}
+#passImg{width:min(238px,62vw);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.65)}
+.share-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .recap{width:min(380px,94vw)}
 .recap h3{font-size:13px;font-weight:900;color:var(--paper);margin:10px 0 8px;letter-spacing:.1em}
 .recap-item{
@@ -281,6 +287,17 @@ img.ts-logo{width:min(420px,90vw);height:auto;display:block;mix-blend-mode:scree
 <div class="end-screen" id="endScreen">
   <div class="end-rank" id="endRank"></div>
   <div class="end-msg" id="endMsg"></div>
+  <div class="meigen" id="meigen" style="display:none">
+    <div class="mg-label">■ 今夜の迷言 — WORST MOMENT REPLAY</div>
+    <div class="mg-you" id="mgYou"></div>
+    <div class="mg-npc" id="mgNpc"></div>
+  </div>
+  <img id="passImg" alt="バックステージパス" style="display:none">
+  <div class="share-row">
+    <button class="chip" id="btnShare" aria-pressed="false">パス画像を共有</button>
+    <button class="chip" id="btnCopy" aria-pressed="false">共有文をコピー</button>
+    <button class="chip" id="btnX" aria-pressed="false">Xでポスト</button>
+  </div>
   <div class="recap" id="recap">
     <h3>■ 今回浴びたメタル英語 — 仕分けると ONE MORE はこの場で復習できる</h3>
     <div id="recapList"></div>
@@ -14730,7 +14747,7 @@ $('seToggle').onclick=()=>{seOn=!seOn;$('seToggle').setAttribute('aria-pressed',
 
 function startGame(){
   ac();
-  beatIdx=0;gauge=50;seen=new Map();
+  beatIdx=0;gauge=50;seen=new Map();worst=null;
   $('titleScreen').style.display='none';$('endScreen').style.display='none';
   $('chatScreen').style.display='flex';
   const s=SCENARIOS[scKey];
@@ -14773,7 +14790,7 @@ function addNpc(lines,jp,vocab,isAd,done){
 }
 function addMe(text,done){
   const d=document.createElement('div');d.className='msg me';
-  d.innerHTML=`<div class="bubble">${esc(text)}</div>`;
+  d.innerHTML=`<div class="bubble">${highlight(text)}</div>`;  /* 送信後に語彙ハイライト解禁 */
   $('msgs').appendChild(d);scrollBottom();
   typeInto(d.querySelector('.bubble'),done);
 }
@@ -14857,10 +14874,10 @@ function renderChoices(beat){
   }
   order.forEach(c=>{
     const b=document.createElement('button');b.className='choice';
-    b.innerHTML=highlight(c.t);
+    b.innerHTML=esc(c.t.replace(/«|»/g,''));  /* 選択肢では語彙を強調しない(正解バレ防止) */
     b.onclick=()=>{
       box.innerHTML='';
-      addMe(c.t.replace(/«|»/g,''),()=>{
+      addMe(c.t,()=>{
         setTimeout(()=>{
           addNpcReact(c.react,()=>{
             beatIdx++;
@@ -14872,7 +14889,10 @@ function renderChoices(beat){
       if(diff==='jigoku'&&q<0) q=Math.round(q*1.5);
       gauge+=q;scoreSum+=q;updateGauge();
       if(q>0) seChord(); else if(q<0) seMute();
-      /* 反応内の«»語彙も記録 */
+      if(q<0&&(!worst||q<worst.q)) worst={q,choice:c.t.replace(/«|»/g,''),react:c.react.replace(/«|»/g,'')};
+      /* 選んだ返答と反応内の«»語彙も記録 */
+      (c.t.match(/«(.+?)»/g)||[]).forEach(m=>{const t=m.replace(/«|»/g,'');
+        if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:null});});
       (c.react.match(/«(.+?)»/g)||[]).forEach(m=>{const t=m.replace(/«|»/g,'');
         if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:null});});
     };
@@ -14929,6 +14949,7 @@ function endGame(){
     msg.textContent=`正解率 ${pct}%／METAL魂 ${gauge} — 「Not bad, kid.」まあ許す。次のツアーも呼んでやる。`;}
   else{rank.textContent='POSER認定';rank.className='end-rank poser';
     msg.textContent=`正解率 ${pct}%／METAL魂 ${gauge} — 「Wimps and posers, leave the hall!」出禁。鋼鉄の道は遠い。`;}
+  renderEndExtras(ratio>=0.8?'true':(ratio>=0.35?'ok':'poser'),pct);
   /* 仕分けリスト構築 */
   const list=$('recapList');list.innerHTML='';
   recapItems=[];sessionSort=new Map();
@@ -14950,6 +14971,7 @@ function endGame(){
 
 /* ---------- A案: ONE MORE即復習 ---------- */
 let recapItems=[], sessionSort=new Map(), revList=[], revIdx=0;
+let worst=null, shareText='';
 function sortItem(item,v,withSe){
   const prog=store.get();prog[item.id]=v;store.set(prog);   // localStorageに永続
   sessionSort.set(item.id,v);
@@ -14995,6 +15017,97 @@ $('revFlip').onclick=revFlip;
 $('revKnow').onclick=()=>revJudge('know');
 $('revAgain').onclick=()=>revJudge('again');
 $('revExit').onclick=()=>$('review').classList.remove('open');
+
+/* ---------- バックステージパス+共有 ---------- */
+async function renderEndExtras(rankKey,pct){
+  const s=SCENARIOS[scKey];
+  const mg=$('meigen');
+  if(worst){
+    $('mgYou').textContent='あなた「'+worst.choice+'」';
+    $('mgNpc').textContent=s.npc.split(' ')[0]+'「'+worst.react+'」';
+    mg.style.display='';
+  } else mg.style.display='none';
+  const quote=rankKey==='true'?'"You\'re one of us!"':rankKey==='ok'?'"Not bad, kid."':'"Wimps and posers, leave the hall!"';
+  const rankJp=rankKey==='true'?'TRUE METALHEAD認定🤘':rankKey==='ok'?'ROADIE認定':'POSER認定…出禁になった';
+  shareText='HËLL単『'+s.name+'』で'+rankJp+'\n'+quote+'（正解率'+pct+'%）'
+    +(worst?'\n迷言「'+worst.choice.slice(0,38)+'」':'')
+    +'\n80年代メタル英語サバイバル → https://helltan.github.io/ #ヘル単';
+  try{
+    const img=$('passImg');
+    img.src=await makePass(rankKey,pct,s);
+    img.style.display='';
+  }catch(e){ $('passImg').style.display='none'; }
+}
+async function makePass(rankKey,pct,s){
+  try{await document.fonts.ready}catch(e){}
+  const W=600,H=920,c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  const gold=['#6E5313','#F6DE8D','#B98F1F','#FFF4C2','#8C6A16'];
+  const silver=['#6E6E74','#F4F4F8','#A9A9B2','#FFFFFF','#7E7E86'];
+  const red=['#5a0e15','#C41E2A','#E0404E','#C41E2A','#5a0e15'];
+  const cols=rankKey==='true'?gold:rankKey==='ok'?silver:red;
+  const grad=(y0,y1)=>{const g=x.createLinearGradient(0,y0,W,y1);cols.forEach((cc,i)=>g.addColorStop(i/(cols.length-1),cc));return g};
+  const rr=(x0,y0,w,hh,r)=>{x.beginPath();x.moveTo(x0+r,y0);x.arcTo(x0+w,y0,x0+w,y0+hh,r);x.arcTo(x0+w,y0+hh,x0,y0+hh,r);x.arcTo(x0,y0+hh,x0,y0,r);x.arcTo(x0,y0,x0+w,y0,r);x.closePath()};
+  x.fillStyle='#100D0C';x.fillRect(0,0,W,H);
+  rr(18,18,W-36,H-36,26);x.fillStyle='#17130F';x.fill();
+  x.lineWidth=5;x.strokeStyle=grad(0,H);x.stroke();
+  rr(W/2-56,44,112,26,13);x.fillStyle='#100D0C';x.fill();
+  x.lineWidth=2.5;x.strokeStyle='#3a3532';x.stroke();
+  const logo=document.querySelector('img.ts-logo');
+  if(logo&&logo.complete&&logo.naturalWidth){
+    const lw=430,lh=lw*(logo.naturalHeight/logo.naturalWidth);
+    x.drawImage(logo,(W-lw)/2,96,lw,lh);
+  }
+  x.textAlign='center';
+  x.font='900 60px "Archivo Black", sans-serif';
+  x.fillStyle=grad(300,370);
+  x.fillText(rankKey==='true'?'ALL ACCESS':rankKey==='ok'?'CREW':'NO ENTRY',W/2,332);
+  x.font='900 28px "Zen Kaku Gothic New", sans-serif';x.fillStyle='#F2EDE3';
+  x.fillText(rankKey==='true'?'TRUE METALHEAD':rankKey==='ok'?'ROADIE 認定':'POSER 認定',W/2,380);
+  x.font='700 22px "IBM Plex Mono", monospace';x.fillStyle='#C9A227';
+  x.fillText(s.en,W/2,438);
+  x.font='900 116px "Archivo Black", sans-serif';x.fillStyle=grad(480,620);
+  x.fillText(pct+'%',W/2,586);
+  x.font='700 19px "Zen Kaku Gothic New", sans-serif';x.fillStyle='#7A736D';
+  x.fillText('METAL ENGLISH 正解率',W/2,622);
+  const words=[...seen.values()].slice(0,3).map(v=>v.term);
+  x.font='900 19px "Archivo Black", sans-serif';x.fillStyle='#C9A227';
+  x.fillText("TONIGHT'S SETLIST",W/2,688);
+  x.font='700 23px "Special Elite", monospace';x.fillStyle='#F2EDE3';
+  words.forEach((w,i)=>x.fillText(w.length>26?w.slice(0,25)+'…':w,W/2,726+i*34));
+  x.font='700 21px "IBM Plex Mono", monospace';x.fillStyle='#7A736D';
+  x.fillText('helltan.github.io',W/2,H-50);
+  if(rankKey==='poser'){
+    x.save();x.translate(W/2,520);x.rotate(-0.22);
+    x.strokeStyle='#C41E2A';x.lineWidth=8;x.strokeRect(-232,-86,464,172);
+    x.lineWidth=3;x.strokeRect(-218,-72,436,144);
+    x.font='900 80px "Archivo Black", sans-serif';x.fillStyle='#C41E2A';
+    x.fillText('REJECTED',0,10);
+    x.font='900 30px "Zen Kaku Gothic New", sans-serif';
+    x.fillText('出　禁',0,54);
+    x.restore();
+  }
+  return c.toDataURL('image/png');
+}
+$('btnCopy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(shareText);
+    $('btnCopy').textContent='コピーした🤘';
+    setTimeout(()=>$('btnCopy').textContent='共有文をコピー',1500);
+  }catch(e){}
+};
+$('btnX').onclick=()=>window.open('https://x.com/intent/post?text='+encodeURIComponent(shareText),'_blank');
+$('btnShare').onclick=async()=>{
+  const img=$('passImg'); if(!img.src) return;
+  try{
+    const blob=await (await fetch(img.src)).blob();
+    const file=new File([blob],'helltan-pass.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],text:shareText});return;
+    }
+  }catch(e){}
+  const a=document.createElement('a');a.href=img.src;a.download='helltan-pass.png';a.click();
+  try{await navigator.clipboard.writeText(shareText)}catch(e){}
+};
 
 /* ---------- 起動: master.json読込(辞書用) ---------- */
 async function loadMaster(){
