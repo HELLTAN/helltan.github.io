@@ -149,6 +149,7 @@ img.ts-logo{width:min(420px,90vw);height:auto;display:block;mix-blend-mode:scree
 .meigen{width:min(380px,94vw);border:1px dashed #4a3d22;border-radius:3px;padding:10px 14px;background:#1A1512;text-align:left}
 .meigen .mg-label{font-size:10px;color:var(--gold);font-weight:900;letter-spacing:.18em;margin-bottom:6px}
 .meigen .mg-you{font-size:13px;color:var(--steel);line-height:1.65}
+.meigen .mg-jp{display:block;font-size:11.5px;color:var(--dim);font-weight:500;margin-top:2px}
 .meigen .mg-npc{font-size:13px;color:var(--obi-red);font-weight:700;line-height:1.65;margin-top:4px}
 #passImg{width:min(238px,62vw);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.65)}
 .share-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -258,6 +259,23 @@ img.ts-logo{width:min(420px,90vw);height:auto;display:block;mix-blend-mode:scree
 [data-skin="zine"] .choice{background:#fff;color:#1E1B18;border-color:#777;
   font-family:'Special Elite','Yomogi',monospace}
 
+/* ========== 吹き出し全画面リーダー ========== */
+.msg:not(.sys) .bubble{cursor:zoom-in;-webkit-tap-highlight-color:transparent}
+.bubfull{position:fixed;inset:0;z-index:39;display:none;background:rgba(10,8,7,.9);backdrop-filter:blur(3px);
+  align-items:center;justify-content:center;flex-direction:column;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}
+.bubfull.open{display:flex}
+.bubfull .bf-sheet{background:var(--paper);color:#1E1B18;width:min(560px,100%);max-height:78vh;overflow-y:auto;
+  border-radius:4px;padding:16px 18px 18px;box-shadow:0 14px 34px rgba(0,0,0,.55);-webkit-overflow-scrolling:touch}
+.bubfull .bf-who{font-family:'Archivo Black','Zen Kaku Gothic New',sans-serif;font-size:12px;letter-spacing:.2em;color:#7A1A12;
+  border-bottom:2px solid var(--obi-red);padding-bottom:6px;margin-bottom:12px}
+.bubfull .bf-en{font-size:clamp(19px,5.6vw,24px);line-height:1.75;font-weight:700;overflow-wrap:anywhere}
+.bubfull .bf-en .vocab{color:#A3121F;border-bottom:2px solid #A3121F;font-weight:900;cursor:pointer}
+.bubfull .bf-en .scene{color:#5A3E10;font-style:italic}
+.bubfull .bf-jp{font-size:clamp(15px,4.4vw,18px);line-height:1.85;color:#4A433C;margin-top:14px;padding-top:12px;border-top:1px dashed #b9ae9c}
+.bubfull .bf-x{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;width:44px;height:44px;border:0;border-radius:50%;
+  background:rgba(242,237,227,.14);color:var(--paper);font-size:24px;line-height:44px;cursor:pointer}
+.bubfull .close-hint{color:var(--dim);font-size:13px;margin-top:12px}
+
 .type-cursor{display:inline-block;width:.52em;height:1em;background:currentColor;opacity:.75;
   vertical-align:-.12em;margin-left:1px;animation:tcur .75s steps(1) infinite}
 @keyframes tcur{50%{opacity:0}}
@@ -323,6 +341,17 @@ img.ts-logo{width:min(420px,90vw);height:auto;display:block;mix-blend-mode:scree
     <button class="start-btn" id="startReview" style="font-size:14px;padding:12px 22px;display:none">ONE MOREを復習 ▶</button>
     <button class="start-btn" id="backTitle" style="font-size:14px;padding:12px 26px;background:#3a3532">タイトルへ</button>
   </div>
+</div>
+
+<!-- ===== 吹き出し全画面 ===== -->
+<div class="bubfull" id="bubfull" role="dialog" aria-modal="true" aria-label="会話を全画面で読む">
+  <button class="bf-x" id="bfX" aria-label="閉じる">×</button>
+  <div class="bf-sheet" id="bfSheet">
+    <div class="bf-who" id="bfWho"></div>
+    <div class="bf-en" id="bfEn"></div>
+    <div class="bf-jp" id="bfJp"></div>
+  </div>
+  <div class="close-hint">下線の語はタップで辞書／それ以外をタップで閉じる</div>
 </div>
 
 <!-- ===== ピック辞書 ===== -->
@@ -16460,9 +16489,9 @@ const SCENARIOS = {
     beats:[
       { npc:["Hey! You the new «roadie»?","«Are you ready to rock»?!"],
         jp:'おい、新入りのローディーか？ロックする準備はできてるか？！',
-        vocab:{'Are you ready to rock':'ロックする準備はいいか(定番の問いかけ)'},
+        vocab:{'Are you ready to rock':'ロックする準備はいいか(定番の問いかけ)','Hell yes':'「当然だ！」の強調形。80年代の誌面にある形(Hell yeahは当時の誌面に見当たらない)'},
         choices:[
-          {t:"«Hell yeah»! Born ready — «let's make this building shake»!", q:3, react:"THAT'S the answer! I like you already, kid.", why:'問いかけには叫びで返す。それがメタルの挨拶'},
+          {t:"«Hell yes»! Born ready — «let's make this building shake»!", q:3, react:"THAT'S the answer! I like you already, kid.", why:'問いかけには叫びで返す。それがメタルの挨拶'},
           {t:"Ready! I memorized the «setlist» and brought spare batteries.", q:0, react:"Batteries... practical. But where's the FIRE, kid? I need FIRE."},
           {t:"Totally! I know you guys from MTV — the video with the explosions and the girl in the cage!", q:-4, react:"From a VIDEO?! Name ONE song from our first album. ...Thought so. Strike one, «poser».", why:'MTVのビデオでしか知らない。1stアルバムの曲を1曲も言えない'},
         ]},
@@ -16474,11 +16503,11 @@ const SCENARIOS = {
           {t:"Found it... but it smells like a «tour bus». Shall I wash it?", q:0, react:"WASH it?! That smell is ten years of «glory»! ...Fine. Don't touch the smell."},
           {t:"Found it! And look — I'm wearing a STEEL OATH T-shirt tonight to show support!", q:-3, react:"OUR shirt? At OUR show?! Rule number one: you never wear the band's shirt to the band's gig. Turn it inside out, kid.", why:'そのバンドのTシャツをそのバンドのライブに着ていく（暗黙のマナー違反）'},
         ]},
-      { npc:["Tonight I'm gonna shout «Let me hear you scream, TOKYO!» — yeah, «the Dickinson special».","Think they'll scream back? I heard Japanese crowds are quiet.","But the promoter's car stereo plays Loudness, «Crazy Nights», on repeat. So which is it?!"],
-        jp:'今夜は「Let me hear you scream, TOKYO!」と叫ぶ——そう、ディッキンソンの十八番だ。返してくれると思うか？日本の客は静かだと聞いた。でもプロモーターの車じゃLoudnessの「Crazy Nights」がエンドレスだ。どっちなんだ？！',
+      { npc:["Tonight I'm gonna shout «Let me hear you scream, TOKYO!» — yeah, «the Dickinson special».","Think they'll scream back? I heard Japanese crowds are quiet — and they sit in SEATS?!","But the promoter's car stereo plays Loudness, «Crazy Nights», on repeat. So which is it?!"],
+        jp:'今夜は「Let me hear you scream, TOKYO!」と叫ぶ——そう、ディッキンソンの十八番だ。返してくれると思うか？日本の客は静かで、しかも椅子に座ってるって聞いたぞ？！でもプロモーターの車じゃLoudnessの「Crazy Nights」がエンドレスだ。どっちなんだ？！',
         vocab:{'Let me hear you scream, TOKYO!':'東京、叫びを聞かせろ！(都市名差し替え型の定番シャウト)'},
         choices:[
-          {t:"They'll «sing it back to you». Every word. The 'Crazy Nights' crowd doesn't sit down — Tokyo is «die-hard».", q:3, react:"Every word?! Now THAT gives me chills. Let's do this.", why:'地元のシーン(Loudness)を知っていて、客の熱さを保証できる'},
+          {t:"They'll «sing it back to you». Every word. The 'Crazy Nights' crowd doesn't sit down — Tokyo is «die-hard».", q:3, react:"Every word?! And I heard they throw PRESENTS on stage here — Maiden got BANANAS! Let's do this.", why:'地元のシーン(Loudness)を知っていて、客の熱さを保証できる。当時の来日公演ではステージに差し入れが飛んだ(BURRN! 1985年)'},
           {t:"Quiet during the verses — then the chorus EXPLODES. Trust the silence.", q:1, react:"A slow burn, huh... I can work with a slow burn. Interesting country."},
           {t:"Japanese girls love ballads. Open with your love song — and maybe slow down the fast parts?", q:-3, react:"SLOW DOWN THE FAST PARTS?! The fast parts ARE the song! We open «fast and brutal». The «ballad» is song NINE!", why:'速い曲を遅くしろと言う。バラード目当てでメタルを聴いている'},
         ]},
@@ -16490,12 +16519,20 @@ const SCENARIOS = {
           {t:"Two hours is plenty. Breathe. I'll «restring» it myself.", q:1, react:"...Yeah. Yeah, you're right. Deep breath. You're calm, kid. Scary calm."},
           {t:"No problem — the opening act's keyboard player can play your solo on synth. It sounds just like a guitar!", q:-3, react:"'JUST LIKE A GUITAR'?! Nothing sounds like a guitar except a GUITAR! What did I JUST say? «No synths»!", why:'シンセでギターの代わりになると思っている'},
         ]},
+      { npc:["Question. The Scorpions sang a Japanese song at the «Budokan». The kids went NUTS.","And last month a singer yelled «Hello, Fukuoka!» in Nagoya. A kid in the front row held up a card: 'THIS IS NAGOYA!'","So what do WE do for Tokyo?"],
+        jp:'質問だ。スコーピオンズは武道館で日本の歌を歌って、キッズが大熱狂したらしい。それに先月、ある歌手が名古屋で「Hello, Fukuoka!」と叫んで、最前列の子にカードで「ここはナゴヤ！」と突っ込まれた。で、俺たちは東京のために何をする？',
+        vocab:{'Budokan':'日本武道館。海外バンドにとって来日公演の聖地','Hello, Fukuoka!':'都市名の言い間違い。1985年4月、名古屋公演での実話(BURRN!誌)','cue card':'カンペ。英語ではcue card','Arigato, Tokyo':'「ありがとう、東京」。来日ミュージシャンが好んで使った片言の日本語'},
+        choices:[
+          {t:"Open with a song with Tokyo in the title, and learn one line in Japanese. I'll hold up a «cue card» for you — just in case.", q:3, react:"A CUE CARD! In case I forget where I AM! Kid, you think of EVERYTHING.", why:'日本向けの曲と片言の日本語は当時の来日公演の定番(Bon Joviは「Tokyo Road」で開演)。ファンも英語のカンペで応えた'},
+          {t:"Just shout «Arigato, Tokyo»! They'll love it.", q:1, react:"Arigato... ARIGATO! I've been practicing that one in the mirror. Good call."},
+          {t:"Cover the No.1 idol song from the TV hit chart! Everybody in Japan knows it!", q:-3, react:"An IDOL song?! From a TV CHART?! We're STEEL OATH, not a jingle! The metal kids came for METAL, kid!", why:'メタルの客に、テレビの歌謡曲ヒットをやろうとする'},
+        ]},
       { npc:["«Pop quiz», kid. Finish the line:","'Other bands play...'"],
         jp:'抜き打ちテストだ。続きを言ってみろ。「Other bands play...」',
         vocab:{},
         choices:[
           {t:"...STEEL OATH «kills»!", q:3, react:"HAHA! You KNOW the law! «Heavy metal is the law»!", why:'「Other bands play, Manowar kills」の型を知っている'},
-          {t:"...STEEL OATH plays HARDER!", q:-2, react:"Close. CLOSE. But the law says KILLS. Not 'harder'. KILLS. Write it down."},
+          {t:"...STEEL OATH plays HARDER!", q:-2, react:"Close. CLOSE. But the law says KILLS. Not 'harder'. KILLS. Write it down.", why:'惜しいが、決まり文句は「kills」。型を崩すと台無し'},
           {t:"...STEEL OATH makes great background music for studying!", q:-4, react:"BACKGROUND MUSIC?! Metal is NEVER in the background! You don't study to it, you SURRENDER to it. «Wimps go home»!", why:'メタルをBGM扱いする。メタルは「ながら聴き」するものじゃない'},
         ]},
       { npc:["Can I tell you something? Before every show... I feel «fear».","But fear is fuel. We «stand and fight». Every single night."],
@@ -16514,9 +16551,9 @@ const SCENARIOS = {
           {t:"You take a 10-minute break for 15 minutes — see you in 20!", q:2, react:"HA! 'See you in 20'! You know the classics! Not bad, kid!"},
           {t:"Half the crowd leaves early to beat the rush at the train station.", q:-3, react:"LEAVE BEFORE THE ENCORE?! For a TRAIN?! Real fans stay until the «house lights» come on. Trains can wait!", why:'電車の混雑を避けてアンコール前に帰る'},
         ]},
-      { npc:["It's time. «Doors open».","«Let's make this building shake». And after the show? We're «Living After Midnight».","You did good today, kid. «Keep the metal alive»."],
-        jp:'時間だ。開場する。この建物を揺らしてやろう。終演後は？「Living After Midnight」だ。今日はよくやったな。メタルを生かし続けろ。',
-        vocab:{"Let's make this building shake":'この建物を揺らそうぜ(物理的熱狂の要求)','Keep the metal alive':'メタルを生かし続けろ(別れの定型)'},
+      { npc:["It's time. «Doors open».","«Let's make this building shake». And after the show? We're «Living After Midnight».","You did good today, kid. «Keep the faith»."],
+        jp:'時間だ。開場する。この建物を揺らしてやろう。終演後は？「Living After Midnight」だ。今日はよくやったな。信念を貫けよ。',
+        vocab:{"Let's make this building shake":'この建物を揺らそうぜ(物理的熱狂の要求)','Keep the faith':'信念を貫け(80年代の誌面に実在する別れの定型)'},
         choices:[
           {t:"«See you in hell», JAKE!", q:3, react:"SEE YOU IN HELL, KID!! ...That's how metal says goodbye. PERFECT.", why:'別れの挨拶は「地獄で会おう」。これもGrim Reaperの曲名'},
           {t:"Good luck out there!", q:0, react:"Luck?! We don't need luck. We have VOLUME."},
@@ -16527,16 +16564,16 @@ const SCENARIOS = {
 
   penpal: {
     name:'ペンパル文通編', en:'AIRMAIL FROM OHIO 1987',
-    desc:'オハイオの文通相手RANDYから、エアメールがメタル英語で届く。',
+    desc:'BURRN!のAIR MAIL欄で見つけた文通相手。オハイオのRANDYから、エアメールがメタル英語で届く。',
     npc:'RANDY (Ohio, 17)', avatarChar:'R', pillarColor:1, skin:'airmail',
     beats:[
-      { npc:["Greetings from Ohio!! I'm Randy. Metal is my life.","Right now '«Master of Puppets»' is glued to my «turntable».","My mom says turn it down. I say «turn the volume up»!"],
-        jp:'オハイオからこんにちは！！ランディだ。メタルは俺の人生。いまターンテーブルには『Master of Puppets』が貼りついてる。母さんは音を下げろと言う。俺は「ボリュームを上げろ」と言う！',
-        vocab:{'turn the volume up':'ボリュームを上げろ(turn up=句動詞)','We play loud because we can':'爆音で鳴らすのはそれができるからだ(反骨の名言)'},
+      { npc:["Greetings from Ohio!! Thanks for answering my ad in «BURRN!» — I can't read one word of it, but my NAME is in a Japanese magazine!!","Right now '«Master of Puppets»' is glued to my «turntable».","So tell me — your age, your hobby, and who you're mostly «into»."],
+        jp:'オハイオからこんにちは！！BURRN!の俺の広告に返事をくれてありがとう——一文字も読めないけど、俺の名前が日本の雑誌に載ってるんだ！！いまターンテーブルには『Master of Puppets』が貼りついてる。で、教えてくれ——年齢、趣味、それに一番ハマってるのは誰だ？',
+        vocab:{'BURRN!':'1984年創刊の日本のメタル専門誌。AIR MAIL欄で海外の文通相手を紹介した','into':'be into＝〜にハマっている(1986年のBURRN!誌も解説した定番語)','poser sandwich':'ポーザーのサンドイッチ。1985年、RattとBon Joviに挟まれた出演順をMetallicaのJames Hetfieldがこう呼んだ',"Thrash 'til death":'死ぬまでスラッシュ(1985〜86年の誌面に実在する合言葉)','headbanging':'ヘッドバンギング(頭を振ること)'},
         choices:[
-          {t:"Greetings, brother of «steel»! «We play loud because we can»!", q:3, react:"BROTHER OF STEEL!! Best first letter EVER. Framing it.", why:'最初の一通から鋼鉄モード。音量の話には爆音で返す'},
-          {t:"Hi Randy! Metal rules. But maybe obey your mom at midnight?", q:0, react:"Midnight is when the DOOM hits best... but OK. Headphones. Deal."},
-          {t:"Cool! I love metal too — Bon Jovi's «Livin' on a Prayer» is the heaviest song ever!", q:-3, react:"BON JOVI?! The HEAVIEST?! That's what my SISTER plays at the mall! Bon Jovi is for the radio. Metallica is for WAR!", why:'ラジオの売れ線(Bon Jovi)を「一番ヘヴィ」だと思っている'},
+          {t:"I'm 17. Hobby: «headbanging». Mostly «into» Metallica, Slayer and Anthrax. «Thrash 'til death»!", q:3, react:"THRASH 'TIL DEATH!! Best first letter EVER. I'm framing it.", why:'自己紹介は「年齢・趣味・好きなバンド」の型(BURRN!のAIR MAIL欄の指定どおり)。締めはスラッシュ派の合言葉'},
+          {t:"My name is Taro. I am seventeen years old. My hobby is listening to music.", q:0, react:"Textbook English! But WHAT music, Taro?! Next letter: band names. LOTS of band names."},
+          {t:"Cool! I love metal too — Bon Jovi's «Livin' on a Prayer» is the heaviest song ever!", q:-3, react:"BON JOVI?! The HEAVIEST?! My SISTER plays that at the mall! Metallica once played between Ratt and Bon Jovi — James called it a «poser sandwich»!", why:'ラジオの売れ線(Bon Jovi)を「一番ヘヴィ」だと思っている。当時の日本では人気No.1新人だったが、米国のスラッシュ派にとっては敵側'},
         ]},
       { npc:["Last month my girl left me. I keep spinning «Rainbow»'s 'Since You Been Gone'.","«Since you been gone»... man, that song IS my life now.","I'm «gonna» write a «power ballad» about her. With doves."],
         jp:'先月、彼女にフラれた。RainbowのSince You Been Goneばかり回してる。「君が去ってから」…あの曲はいまの俺そのものだ。彼女のことをパワーバラードにするつもりだ。ハトの演出つきで。',
@@ -16551,30 +16588,38 @@ const SCENARIOS = {
         vocab:{'evil':'邪悪な。メタルでは最大級の誉め言葉'},
         choices:[
           {t:"地獄 means HELL. The obi is armor for the record. Collectors keep it forever.", q:3, react:"HELL?! On a paper BELT?! Japan is the most metal country alive!!", why:'帯の意味も価値も分かっている。帯付きはコレクターの誇り'},
-          {t:"It means a type of noodle.", q:-2, react:"Noodle...? Wait. WAIT. Kenji says you LIED to me!! Hell noodles?!"},
+          {t:"It means a type of noodle.", q:-2, react:"Noodle...? Wait. WAIT. Kenji says you LIED to me!! Hell noodles?!", why:'帯の漢字を適当にごまかす。文通相手への嘘はすぐばれる'},
           {t:"It means hell. But I always throw the obi in the trash. It's just paper, right?", q:-3, react:"THE TRASH?! Kenji says collectors would CRY! An LP without its obi is a knight without his ARMOR!", why:'帯を捨てる。帯付きかどうかで価値が変わることを知らない'},
         ]},
       { npc:["My dad says metal «ain't» real music. That «ain't no» truth.","I played him Megadeth, «Peace Sells». He said 'turn that noise off.'","I will keep my hair long «till the end of time»."],
         jp:'親父がメタルは本物の音楽じゃないと言う。そんなの真実なんかじゃない。親父にMegadethの「Peace Sells」を聴かせたら「その騒音を止めろ」だと。俺は時の終わりまで髪を伸ばし続ける。',
-        vocab:{"ain't no":'二重否定=強い否定(標準文法の逆)','till the end of time':'時の終わりまで=永遠に'},
+        vocab:{"ain't no":'二重否定=強い否定(標準文法の逆)','till the end of time':'時の終わりまで=永遠に','Metal rules':'メタル最高！(〜 rules=〜が最高。1986年のBURRN!誌も解説した定番)','wimp out':'軟弱になる・日和る(wimp=弱虫。80年代の誌面で最多の悪口)'},
         choices:[
-          {t:"«Keep your hair long and your amplifiers loud»!", q:3, react:"I'm framing THIS one too. On the wall. Next to the posters.", why:'髪と音量は譲らない。メタルの定番フレーズで背中を押す'},
+          {t:"Tell your dad: «Metal rules»! We will never «wimp out» — hair long, volume up.", q:3, react:"'NEVER WIMP OUT.' Writing it on my bedroom door. Dad can read it every morning.", why:'「〜 rules!」「wimp out(軟弱化する)」は当時のファンの定番語。髪と音量は譲らない'},
           {t:"Dads never get it. Mine calls my records 'noise'. We endure, brother.", q:1, react:"'Noise'! Why do all dads say the same exact WORD?! We endure!!"},
           {t:"Your dad has a point. Metal is just a phase — I'll quit when I go to college.", q:-3, react:"A PHASE?! Metal is not a PHASE, it is a WAY OF LIFE! «We will stop wearing black when they make a darker color»!", why:'メタルを「卒業するもの」「一時のブーム」だと思っている'},
         ]},
-      { npc:["BIG NEWS: I saw Anthrax live!!","I got «Caught in a Mosh» — lost one shoe, found a better one.","Have you ever been in a «mosh pit»?"],
-        jp:'ビッグニュース：Anthraxのライブを観た！！「Caught in a Mosh」状態だった——靴を片方なくして、もっといい靴を拾った。お前はモッシュピットに入ったことあるか？',
-        vocab:{},
+      { npc:["Speaking of Megadeth — Dave «Mustaine» got kicked out of Metallica in '83. 'The Four Horsemen' was HIS song first, called «Mechanix»!","Now he's back «faster and meaner». «Peace Sells... but Who's Buying?» is the album of '86, period.","So what does BURRN! say about them? Does Japan get it?"],
+        jp:'Megadethと言えば——デイヴ・ムステインは83年にMetallicaをクビになった。「The Four Horsemen」は元々あいつの曲で、「Mechanix」って名前だったんだ！で、今やもっと速く、もっと凶悪になって戻ってきた。『Peace Sells... but Who\'s Buying?』は86年のアルバムで決まりだ、以上。で、BURRN!はあいつらのこと何て書いてる？日本は分かってるか？',
+        vocab:{'Mustaine':'デイヴ・ムステイン。Metallicaの初代リードギター。1983年に解雇され、Megadethを結成','Mechanix':'ムステイン作の曲。Metallicaは歌詞と編曲を変えて「The Four Horsemen」(邦題「電撃の騎士」)にした','faster and meaner':'より速く、より凶悪に(mean＝意地悪な→メタルでは褒め言葉)',"Peace Sells... but Who's Buying?":'Megadethの2ndアルバム(1986年11月)。「平和は売り物、でも誰が買う？」','trashed':'酷評した(trash＝ゴミ扱いする。thrashと語呂が近い)','headbang':'ヘッドバンギングする(動詞)','production':'音作り・録音の仕上がり(プロダクション)','Ellefson':'デイヴィッド・エレフソン。Megadethのベーシスト'},
         choices:[
-          {t:"Not yet — but next Tokyo show, I'm in the pit. If someone falls, we pick him up. That's the code!", q:3, react:"THE CODE!! You know the pit code! Somebody falls, everybody lifts. You're a true metalhead, Tokyo!", why:'ピットの掟を知っている：倒れた奴は皆で起こす'},
+          {t:"Confession: BURRN! «trashed» their first album in '85 — 41 out of 100! 'Too many riffs, the song changes every minute, you can't even «headbang» — and the «production» is terrible.' But Peace Sells has a REAL sound. I'm a believer now.", q:3, react:"41?! They TRASHED the THRASH?! ...OK, OK. Killing Is My Business DOES sound like a garage. But Peace Sells is a WAR MACHINE. Tell BURRN! to listen AGAIN!", why:'1985年のBURRN!はデビュー作『Killing Is My Business... and Business Is Good!』に41点。「リフも曲構成も複雑すぎて頭も振れない」「録音状態がヒドイ」と酷評した。雑誌の評価を伝えたうえで、自分の耳で聴いた感想も言えている'},
+          {t:"Sometimes too fast for me. But the «bass intro» of 'Peace Sells' — that I love.", q:1, react:"That BASS INTRO! «Ellefson» rules. It's the part my dad hates MOST. Perfect."},
+          {t:"I didn't buy it. BURRN! gave their first album 41 points, so it must be bad. I only buy records with high scores.", q:-3, react:"41 POINTS?! You let a MAGAZINE pick your records?! Use your OWN ears, Tokyo! A number can't headbang for you!", why:'雑誌の点数だけで決めて、自分では一度も聴いていない。メタルヘッドは自分の耳を信じる'},
+        ]},
+      { npc:["BIG NEWS: I saw Anthrax live at the «Agora» in Cleveland!!","I got «Caught in a Mosh» — lost one shoe, found a better one. «Mosh» is the new word here. Last year we all said «slam dancing».","Have you ever been in a «mosh pit»?"],
+        jp:'ビッグニュース：クリーヴランドのアゴラでAnthraxのライブを観た！！まさに「Caught in a Mosh」——靴を片方なくして、もっといい靴を拾った。「モッシュ」はこっちの新しい言葉なんだ。去年まではみんな「スラム・ダンス」って言ってた。お前はモッシュピットに入ったことあるか？',
+        vocab:{'Agora':'クリーヴランドの老舗ライブハウス','mosh':'モッシュ。1986〜87年に広まった新語','slam dancing':'スラム・ダンス(moshの前の呼び名)','live house':'ライブハウス(和製英語。英語ではclub)'},
+        choices:[
+          {t:"Our big halls have SEATS — dive there and you hit a chair! But at the «live house», I'm in the pit. Somebody falls, we pick him up. That's the code!", q:3, react:"SEATS?! Wild! But you know the code — somebody falls, everybody lifts. True metalhead, Tokyo!", why:'日本の大ホールは椅子席で、ダイブすると椅子にぶつかる(1986年のBURRN!誌)。それでもピットの掟は知っている'},
           {t:"I watch from the back. Somebody has to hold the jackets.", q:1, react:"The jacket guardian! Every pit needs one. Respect, brother."},
           {t:"I went to a show once — in white jeans. I sat in my seat and ate nachos the whole time!", q:-3, react:"WHITE JEANS?! At a THRASH show?! The pit would eat you alive... and your nachos.", why:'スラッシュのライブに白いジーンズで行き、座ってナチョスを食べている'},
         ]},
-      { npc:["Gotta go — dinner. «Meatloaf» again. Not the singer. Sadly.","Write back soon, OK? «Keep the metal alive»!","Your brother in «steel», Randy"],
-        jp:'もう行かなきゃ、夕飯だ。またミートローフ。歌手の方じゃなくて残念だが。すぐ返事くれよな？メタルを生かし続けろ！鋼鉄の兄弟、ランディより',
-        vocab:{'Keep the metal alive':'メタルを生かし続けろ(手紙やライブの締めの定型)'},
+      { npc:["Gotta go — dinner. «Meatloaf» again. Not the singer. Sadly.","Write back soon — «drop me a line», OK? «Metal rules»!","Your brother in «steel», Randy"],
+        jp:'もう行かなきゃ、夕飯だ。またミートローフ。歌手の方じゃなくて残念だが。すぐ返事くれよな、一筆頼む！メタル最高！鋼鉄の兄弟、ランディより',
+        vocab:{'drop me a line':'一筆くれ＝手紙をくれ(当時の手紙の定番)','Metal rules':'メタル最高！','Keep the faith':'信念を貫け(1986〜89年の誌面にある締め)','Rage on':'荒れ狂い続けろ(1987年の米国ファンジンにある締め)'},
         choices:[
-          {t:"«To hell and back», brother. Until the next letter!", q:3, react:"TO HELL AND BACK!!! Best pen pal in the WORLD. «\\m/»", why:'締めの挨拶もVenomの曲名。手紙の最後まで鋼鉄'},
+          {t:"«Keep the faith», brother! «Rage on» till the next letter!", q:3, react:"RAGE ON!!! Best pen pal in the WORLD. «\\m/»", why:'「Keep the faith」も「Rage on!!!」も、80年代の誌面に実在する締めの言葉'},
           {t:"Enjoy the meatloaf. The food, not the singer.", q:1, react:"I will NOT enjoy it. But the joke? The joke I enjoy. Write soon!"},
           {t:"P.S. My favorite metal song is 'The Final Countdown' — the keyboard part is SO cool!", q:-2, react:"The KEYBOARD part?! ...OK, it IS catchy. But it's not ARMOR, man. Go play Master of Puppets. Twice.", why:'シンセのフレーズが好きで、それをメタルの代表曲だと思っている'},
         ]},
@@ -16583,44 +16628,44 @@ const SCENARIOS = {
 
   classified: {
     name:'メン募応募編', en:'CLASSIFIED ADS — L.A. 1983',
-    desc:'音楽誌の最終ページ、3行の募集広告。電話の向こうのバンドリーダーDUKEの審査を突破せよ。',
+    desc:'L.A.の音楽紙の巻末、メンバー募集欄の小さな広告。電話の向こうのバンドリーダーDUKEの審査を突破せよ。',
     npc:'DUKE (NIGHT SORCERY)', avatarChar:'D', pillarColor:4, skin:'notepad',
     beats:[
-      { npc:["《音楽誌最終ページの3行広告》","«WANTED»: Lead guitarist. Pro-minded metal act.","«Infl»: Maiden, Priest, Motörhead. «Must have own gear» + «transport».","«No posers, no egos, no time wasters». Call DUKE."],
-        jp:'《求む》リードギタリスト。プロ志向のメタルバンド。影響源:メイデン、プリースト、モーターヘッド。機材・移動手段持参必須。ポーザー・自己中・冷やかしお断り。DUKEまで電話を。',
-        vocab:{'WANTED':'求む(広告見出しの定型)','Must have own gear':'自前の機材必須(gear=機材)','No posers, no egos, no time wasters':'ポーザー・自己中・冷やかし禁止(メン募三大定型句)'},
+      { npc:["《L.A.の音楽紙の巻末、メン募欄の広告》","«WANTED»: Lead guitarist for «pro-minded» «European style» heavy metal band.","«Infl»: Maiden, Priest, Motörhead. «Must have own equip & trans». «Image & pro attitude a must».","«No egos, no flakes, no posers». «Serious only». Call DUKE «after 6 PM»."],
+        jp:'《求む》リードギタリスト。プロ志向のヨーロッパ・スタイルのヘヴィメタルバンド。影響源：メイデン、プリースト、モーターヘッド。自前の機材と移動手段必須。イメージとプロ意識は必須。自己中・ドタキャン屋・ポーザーお断り。本気の方のみ。DUKEまで夕方6時以降に電話を。',
+        vocab:{'WANTED':'求む(広告見出しの定型)','pro-minded':'プロ志向(1983年のL.A.の募集広告に実在)','European style':'ヨーロッパ(英国)流の。1983年のL.A.のメタルの広告の決まり文句','Infl':'Influencesの略＝影響源','Must have own equip & trans':'自前の機材(equip)と移動手段(trans)必須。当時の広告ではgearよりequipが10倍多い','Image & pro attitude a must':'見た目とプロ意識は必須(a must＝必須事項)','No egos, no flakes, no posers':'自己中・ドタキャン屋(flake)・ポーザーお断り','Serious only':'本気の方のみ(広告の定型)','after 6 PM':'夕方6時以降(昼は働いている人が多い)','beginners welcome':'初心者歓迎(日本のメン募の定番。L.A.ではまず見ない)'},
         choices:[
-          {t:"Duke? Saw your ad. Lead guitar, own gear, zero ego. When's the «audition»?", q:3, react:"...Straight to business. I like you already. Most guys start with excuses.", why:'広告の条件(機材・エゴなし)を押さえて即本題'},
+          {t:"Duke? Saw your ad. Lead guitar, own equip, own car, zero ego. When's the «audition»?", q:3, react:"...Straight to business. I like you already. Most guys start with excuses.", why:'広告の条件(機材・移動手段・エゴなし)を押さえて即本題'},
           {t:"Hello. I am calling regarding the advertisement, if it is convenient.", q:0, react:"Whoa, easy. This ain't a bank, man. But OK — you called. Talk."},
-          {t:"Hi! I've got the look — big hair, leather pants. I just need to learn guitar. How hard can it be?", q:-3, react:"'LEARN GUITAR'?! This is a LEAD GUITAR ad, man! Look comes LAST. «No time wasters»!", why:'見た目だけ揃えて、楽器はこれから。完全な冷やかし'},
+          {t:"Hi! Are «beginners welcome»? I just bought a guitar last week — but I've got the look!", q:-3, react:"BEGINNERS?! Does this ad say 'beginners welcome'?! It says SERIOUS ONLY! Look comes LAST, man!", why:'日本のメン募には「初心者歓迎！」も多かった(BURRN! 1986年)が、L.A.の広告は「Pros only」「Serious only」の世界'},
         ]},
-      { npc:["First question. Think carefully before you answer.","Who are your «influences»?"],
-        jp:'最初の質問だ。よく考えてから答えろ。お前の影響源は誰だ？',
-        vocab:{'influences':'影響源(メン募面接の最重要質問。Infl.と略される)'},
+      { npc:["First question. Who've you played with? ...Never mind. Everybody in this town is «ex-» something.","Who are your «influences»?"],
+        jp:'最初の質問だ。誰とやってた？…いや、いい。この街じゃ誰もが「元〜」だ。お前の影響源は誰だ？',
+        vocab:{'influences':'影響源(メン募面接の最重要質問。Infl.と略される)','ex-':'元〜。当時のミュージシャンは「ex-(前のバンド名)」で紹介された'},
         choices:[
           {t:"Maiden's «galloping» bass, Priest's British «steel» — and Metallica's «Seek & Destroy». Fast is the only speed.", q:3, react:"GALLOPING. And Seek & Destroy?! You're living in the right decade, man.", why:'影響源を具体的なバンド・曲名で言える'},
           {t:"Everything from delta blues to Bach. Music is music, no walls.", q:0, react:"Deep. TOO deep. This is a metal band, professor, not a university."},
           {t:"Quiet Riot! «Cum On Feel the Noize» — I heard it on the radio twice this week!", q:-3, react:"One radio hit is your INFLUENCE?! Name the album. ...Any other song. «Who cares about the mainstream»!", why:'ラジオで聴いたヒット曲1曲だけで「影響を受けた」と言う'},
         ]},
-      { npc:["Gear check. The ad said «must have own gear».","Last guy said he could play «Holy Diver». He couldn't even tune.","So — what's your rig? Don't lie. I can hear lies through the phone."],
+      { npc:["Gear check. The ad said «must have own equip».","Last guy said he could play «Holy Diver». He couldn't even tune.","So — what's your rig? Don't lie. I can hear lies through the phone."],
         jp:'機材チェックだ。広告に「機材持参必須」と書いた。前の奴は「Holy Diver」が弾けると言ったが、チューニングすらできなかった。で、お前の機材(リグ)は？嘘はつくなよ、電話越しでも嘘は聞こえる。',
-        vocab:{'rig':'機材一式(ギター+アンプ+エフェクターの構成)','chops':'腕前・演奏技術(俗)'},
+        vocab:{'must have own equip':'自前の機材必須(equip=equipmentの略)','rig':'機材一式(ギター+アンプ+エフェクターの構成)','chops':'腕前・演奏技術(俗)'},
         choices:[
           {t:"«Flying V» into a full «Marshall stack». Loud enough to wake the «dead».", q:3, react:"A V into a STACK. ...I just got chills. Don't tell the band I said that.", why:'V字ギター＋マーシャルの壁。音で語れる機材'},
           {t:"A good guitar, a borrowed amp — but my «chops» are real.", q:1, react:"Borrowed, huh... Look, chops matter most. But get your OWN amp by Friday."},
           {t:"A tiny practice amp, no «distortion». I like a clean, sparkly sound — like The Police!", q:-3, react:"NO DISTORTION?! Clean and SPARKLY?! Metal without distortion is just... a sandwich without meat!", why:'歪み(ディストーション)なしのキラキラした音を好む'},
         ]},
-      { npc:["Be honest with me now.","Since «Shout at the Devil», every band on the «Sunset Strip» wants the hair, the makeup, the girls...","You in this for the metal... or for the girls and the free beer?"],
-        jp:'正直に答えろ。「Shout at the Devil」以来、サンセット・ストリップのどのバンドも髪型、メイク、女の子…を欲しがってる。お前はメタルのためにやるのか…それとも女とタダ酒のためか？',
-        vocab:{},
+      { npc:["Be honest with me now.","Since «Shout at the Devil», every band on the «Sunset Strip» wants the hair, the makeup... Half the ads in this paper say «image a must».","They all sound like Mötley or Ratt. They laughed at my last band. Let 'em.","So: you in this for the metal... or for the girls and the free beer?"],
+        jp:'正直に答えろ。「Shout at the Devil」以来、サンセット・ストリップのどのバンドも髪型、メイクを欲しがる…この新聞の広告の半分は「イメージ必須」だ。どいつもモトリーかラットみたいな音だ。俺の前のバンドは笑われたよ。笑わせとけ。で——お前はメタルのためにやるのか…それとも女とタダ酒のためか？',
+        vocab:{'image a must':'見た目は必須(1983年のL.A.の募集広告の決まり文句)'},
         choices:[
-          {t:"Metal, «till the end of time». Everything else is decoration.", q:3, react:"'Decoration'. HA! That's going on our first album. Metal first. ALWAYS.", why:'音楽が先、見た目は飾り。優先順位がはっきりしている'},
+          {t:"The ads say image is a must. I say the MUSIC is a must. Everything else is decoration.", q:3, react:"'The MUSIC is a must.' HA! That's going on our first album. Metal first. ALWAYS.", why:'当時のL.A.の広告は「image a must」だらけ。音楽が先、見た目は飾り(L.A.を出たMetallicaも「イメージなんて言葉は大嫌い」と語った)'},
           {t:"The metal. ...The beer is a close second. I won't lie to you.", q:2, react:"HA! Honest! I respect honest. Beer IS second. Officially unofficial."},
           {t:"Mostly the image! I spend two hours on my hair before every gig. I borrow my sister's hairspray!", q:-3, react:"Your SISTER'S hairspray?! Two hours of HAIR?! Practice two hours, THEN talk to me. That's the definition of a «poser»!", why:'練習より髪型(ヘアスプレー)に時間をかける'},
         ]},
-      { npc:["Audition's Saturday. The garage behind the «liquor store» on 7th.","Bring your «axe». Learn three songs from our «demo tape».","«Serious inquiries only» — you still serious?"],
-        jp:'オーディションは土曜。7番街の酒屋の裏のガレージだ。ギターを持ってこい。デモテープから3曲覚えてこい。本気の問い合わせのみ、と書いたはずだ。まだ本気か？',
-        vocab:{'axe':'斧→(俗)ギター','Serious inquiries only':'本気の問い合わせのみ(広告の締め定型)'},
+      { npc:["Audition's Saturday. The garage behind the «liquor store» on 7th.","Bring your «axe». Learn three songs from our «demo tape». Pass, and our first gig is the «Troubadour» — the Whisky's been shut since last fall.","«Serious only» — you still serious?"],
+        jp:'オーディションは土曜。7番街の酒屋の裏のガレージだ。ギターを持ってこい。デモテープから3曲覚えてこい。合格したら最初のライブはトルバドールだ——ウィスキーは去年の秋から閉まってるからな。本気の方のみ、と書いたはずだ。まだ本気か？',
+        vocab:{'axe':'斧→(俗)ギター','Troubadour':'ハリウッドの老舗クラブ。1983年、隣のWhisky a Go Goは閉店中だった','Serious only':'本気の方のみ(広告の締め定型)'},
         choices:[
           {t:"Three songs by Saturday? I'll learn five. See you on 7th.", q:3, react:"FIVE?! ...Saturday. Don't be late. Or early. Be METAL o'clock.", why:'課題以上を練習してくる。それがメタルの本気'},
           {t:"Saturday is difficult for me... could we possibly do Sunday?", q:0, react:"Rescheduling ALREADY?! ...Fine. Sunday. This is your one pass, man."},
@@ -16642,51 +16687,59 @@ const SCENARIOS = {
     desc:'西新宿の輸入盤店で買ったスラッシュ・ファンジン最終ページの募集広告。ノルウェーの中学生OLAVとの国際トレードが始まる。',
     npc:'OLAV (Norway, 14)', avatarChar:'O', pillarColor:3, skin:'zine',
     beats:[
-      { npc:["《西新宿の輸入盤店で買ったファンジン、最終ページの3行広告》","«TRADING»: thrash/speed «demos» & «rehearsal tapes». Wanted: «Bathory», «Celtic Frost», «Kreator».","Your list gets mine.","«No rip-offs»! Write to OLAV, Norway. «Total support» to the underground!"],
-        jp:'《交換求む》スラッシュ/スピード系のデモ・リハーサルテープ。求む：Bathory、Celtic Frost、Kreator。君のリストと俺のリストを交換。騙し無用！ノルウェーのOLAVまで手紙を。アンダーグラウンドに全面支援を！',
-        vocab:{'TRADING':'交換求む(トレード広告の見出し定型)','demos':'デモテープ(バンド自主制作の音源)','rehearsal tapes':'リハーサル録音(練習音源。地下シーンの流通物)','No rip-offs':'騙し・持ち逃げ禁止(トレード広告の定番警告)','rip-offs':'騙し屋ども(rip-offの複数形)','Total support':'全面支援(zine文化の挨拶定型)','trade list':'手持ち音源のリスト(これを交換して取引が始まる)'},
+      { npc:["《西新宿の輸入盤店で買ったファンジン、最終ページの3行広告》","«TRADING»: «Hardcore Metal» «demos» & «reh. tapes» — thrash, speed, black. Wanted: «Bathory», «Celtic Frost», «Kreator».","Send your list — your list gets mine. «No rip-offs»!","1 «IRC» for reply. Write to OLAV, Norway. «Thrash 'til death»!"],
+        jp:'《交換求む》ハードコア・メタルのデモ＆リハテープ——スラッシュ、スピード、ブラック。求む：Bathory、Celtic Frost、Kreator。リストを送ってくれ、君のリストと俺のリストを交換だ。騙し無用！返信用にIRCを1枚。ノルウェーのOLAVまで手紙を。死ぬまでスラッシュ！',
+        vocab:{'TRADING':'交換求む(トレード広告の見出し定型)','Hardcore Metal':'ハードコア・メタル。1985年前後の欧州と日本で、スラッシュ/スピード/ブラックをまとめた呼び名','demos':'デモテープ(バンド自主制作の音源)','reh. tapes':'リハーサル・テープ(rehearsalの略。地下シーンの流通物)','No rip-offs':'騙し・持ち逃げお断り(80年代後半の北欧・日本の誌面にも)','IRC':'国際返信切手券(相手国で切手に交換できる券)',"Thrash 'til death":'死ぬまでスラッシュ(1985年の欧州ファンジンにある締め)','trade list':'手持ち音源のリスト(これを交換して取引が始まる)'},
         choices:[
           {t:"Greetings from Tokyo! My «trade list» is enclosed — your list gets mine!", q:3, react:"TOKYO!! My first Japanese trader!! The scene is TRULY worldwide now!!", why:'まずトレードリストを同封。テープトレードの正しい第一歩'},
           {t:"Hello. I found your address in a fanzine. May we exchange tapes, please?", q:1, react:"So formal! Like a bank letter! But YES — send the list, Tokyo!"},
           {t:"I have no demos, but I can tape the Top 40 from the radio for you every week!", q:-3, react:"The TOP 40?! I said DEMOS! The underground does not live on the radio, Tokyo!", why:'地下のデモではなく、ラジオのヒットチャートを録音して送ろうとする'},
         ]},
-      { npc:["Your list is KILLER! «CASBAH», «OUTRAGE», «SABBAT»... the Japanese underground is RAW!","I want number 7 — the CASBAH live «rehearsal tape» from Tokyo!","Please «dub» it on TDK «chrome» — «C-60», not «C-90». Long tapes jam in my «deck»!","Also — a «trader» in Florida sent me a demo by a band called «Death». Pure brutality!","By the way — I finally got a dub of '«No Life 'til Leather»'. The legend is TRUE."],
-        jp:'君のリスト、最高だ！CASBAH、OUTRAGE、SABBAT…日本のアンダーグラウンドは生々しいな！7番——東京のCASBAHのライブ・リハテープが欲しい！ダビングはTDKのクロームで——C-60で頼む、C-90じゃなく。長いテープはうちのデッキで絡まるんだ！それと、フロリダのトレーダーがDeathってバンドのデモを送ってくれた。純度100%のブルータルさだ！ところで、ついに No Life \'til Leather のダビングを手に入れた。伝説は本物だった。',
-        vocab:{'dub':'ダビングする(日本語のダビングはこのdubbingが語源)','chrome':'クロームテープ(TDK SA等の高音質ポジション)','C-60':'60分カセット(片面30分。C-90は90分)','rehearsal tape':'リハーサル録音(練習音源)'},
+      { npc:["«Hi Thrasher»! «HELL YEZZZ»! Your list is KILLER! «CASBAH», «OUTRAGE», «SABBAT»... the Japanese underground is RAW!","I want number 7 — the new CASBAH live demo, «Fear And Destruction»!","I send you a «blank tape», TDK «C-90». Side A for CASBAH, side B you can fill with what you like!","Also a «trader» in Florida sent me «an real brutal» demo from a band called «Death». It's called «Infernal Death»!","And I finally got a «dub» of '«No Life 'til Leather»'. The legend is TRUE."],
+        jp:'やあスラッシャー！ヘル・イェーース！君のリスト、最高だ！CASBAH、OUTRAGE、SABBAT…日本のアンダーグラウンドは生々しいな！7番——CASBAHの新しいライブデモ「Fear And Destruction」が欲しい！空テープ(TDKのC-90)を送る。A面にCASBAH、B面は君の好きなもので埋めてくれ！それと、フロリダのトレーダーがDeathってバンドのすごくブルータルなデモを送ってくれた。タイトルは「Infernal Death」だ！ついに No Life \'til Leather のダビングも手に入れた。伝説は本物だった。',
+        vocab:{'Hi Thrasher':'やあスラッシャー！(1985年のデンマークのファンジンにある書き出し)','HELL YEZZZ':'Hell yesを伸ばした綴り。ノルウェーのファンジン編集長Metalionの口癖','Fear And Destruction':'CASBAHの最初のライブデモ(1985年6月、1,000本)','blank tape':'空テープ。相手に送って録音してもらうのが当時の作法','C-90':'90分カセット(片面45分。C-60は60分)','an real brutal':'正しくはa real brutal。北欧の若者によくある誤り(当時の誌面のまま)','Infernal Death':'フロリダのバンドDeathの1985年のデモ','dub':'ダビングする(日本語のダビングはこのdubbingが語源)','reh.':'rehearsal(リハーサル)の略。当時の誌面の表記','first-generation':'一次ダビング(マスターから直接コピー。音質が最もよい)'},
         choices:[
-          {t:"TDK chrome C-60, «Dolby OFF», «first-generation» «dub». The underground deserves the best.", q:3, react:"FIRST GENERATION?! Dolby OFF?! You are a PROFESSIONAL! My tape deck thanks you!", why:'クローム・ドルビーOFF・一次ダビング。トレーダーの作法を完璧に押さえている'},
-          {t:"I only have «normal position» tapes right now. Is that OK?", q:0, react:"Normal position... OK, OK. But chrome next time! The cymbals DESERVE chrome!"},
+          {t:"Side A: CASBAH, «first-generation» «dub» from the master. Side B: OUTRAGE «reh.» stuff. No empty minutes!", q:3, react:"FIRST GENERATION?! And no empty minutes?! You are a PROFESSIONAL! My tape deck thanks you!", why:'空テープを送り合い、A面もB面も一次ダビングで埋めて返す。トレーダーの作法'},
+          {t:"I will use your tape. But my deck is old — the sound may be a little bad.", q:0, react:"Old deck... OK, OK. CASBAH is RAW anyway! But clean the heads, Tokyo!"},
           {t:"I'll dub you a copy of my friend's copy of his cousin's copy. Fifth generation!", q:-3, react:"FIFTH generation?! That is not music anymore, that is a SNOWSTORM with drums!", why:'何度もコピーして劣化したテープを平気で送る'},
         ]},
       { npc:["Question for you. A kid at my school offers me MONEY for my dubs — even my Venom tape, «In League with Satan»!","Real money! I could be... rich!","...But something feels wrong about it. What do you think, Tokyo?"],
         jp:'相談がある。学校の奴が俺のダビングテープに金を払うと言ってきた——Venomの「In League with Satan」のテープまでだ！本物の金だ！俺は…金持ちになれる！…でも何かが引っかかる。どう思う、東京？',
-        vocab:{'rip-off':'騙し・ぼったくり(トレード文化最大の罪)','trade':'交換・トレード(地下シーンの基本動詞。売買ではなく物々交換)'},
+        vocab:{'rip-off':'騙し・ぼったくり(トレード文化最大の罪)','trade':'交換・トレード(地下シーンの基本動詞。売買ではなく物々交換)','support the underground':'地下シーンを支えろ(1987年のノルウェーのファンジンにも)','No rip-offs':'騙し・持ち逃げお断り(トレード広告の定番警告)'},
         choices:[
           {t:"«No rip-offs» — the scene runs on «trade», not money. Dub for trade, never for profit.", q:3, react:"YES. That is the code. The underground is not a SHOP. I told him: bring a tape and TRADE like a man!", why:'テープは交換するもの。売ったら地下シーンの裏切り'},
-          {t:"Demos we trade. Albums we BUY — tell him to get the real vinyl and support the band.", q:2, react:"EXACTLY! Demo = trade. Album = buy! That is «total support»! You are wise, Tokyo."},
+          {t:"Demos we trade. Albums we BUY — tell him to get the real vinyl and support the band.", q:2, react:"EXACTLY! Demo = trade. Album = buy! That is how we «support the underground»! You are wise, Tokyo."},
           {t:"Take the money! Sell many copies — you could fund your own band with it!", q:-3, react:"SELLING dubs?! That is a «rip-off», man! Every 'zine in Europe would BAN my name!", why:'ダビングテープを売って儲ける＝シーンを食い物にする'},
         ]},
-      { npc:["I also make my own «'zine»! «Photocopied»... quietly... at my father's office.","Issue #2 reviews Celtic Frost's '«Morbid Tales»' and Kreator's '«Endless Pain»'. Issue #3: a Slayer special. «Show No Mercy» is my bible.","Will you write a Tokyo «scene report» for issue #3?!"],
-        jp:'実は自分のファンジンも作ってるんだ！親父の会社で…こっそり…コピーしてる。第2号ではCeltic Frostの『Morbid Tales』とKreatorの『Endless Pain』をレビューした。第3号はSlayer特集だ。『Show No Mercy』は俺の聖書。第3号に東京のシーンレポートを書いてくれないか？！',
-        vocab:{"'zine":'ファンジン(fanzineの略。ファン自作のコピー誌)','scene report':'シーン報告(各地の現場レポ。国際zineの定番コーナー)','Stay brutal':'ブルータルであれ(地下シーンの別れの挨拶)'},
+      { npc:["I also make my own «'zine»! «Photocopied»... quietly... at my father's office. I write all the «texts» myself.","Issue #2 reviews Celtic Frost's '«Morbid Tales»' and Kreator's '«Endless Pain»'. «Show No Mercy» is my bible.","So — how is the scene down there? (The most original question of all times, hehe.) Will you write a Tokyo «scene report» for issue #3?!"],
+        jp:'実は自分のファンジンも作ってるんだ！親父の会社で…こっそり…コピーしてる。文章は全部自分で書いてる。第2号ではCeltic Frostの『Morbid Tales』とKreatorの『Endless Pain』をレビューした。『Show No Mercy』は俺の聖書。で——そっちのシーンはどうだい？（史上最も独創的な質問だろ、へへ）第3号に東京のシーンレポートを書いてくれないか？！',
+        vocab:{"'zine":'ファンジン(fanzineの略。ファン自作のコピー誌)','texts':'文章・歌詞のこと。北欧の若者は母語の直訳でlyricsをtextsと書いた','scene report':'シーン報告(各地の現場レポ。80年代の英国・日本のファンジンにも)','Stay hardcore':'硬派であれ(1985年の欧州ファンジンの締め。「Stay brutal」は当時の誌面に見当たらない)'},
         choices:[
-          {t:"A Tokyo «scene report»?! Honored. Gigs, record shops, flyers — I cover it all. «Stay brutal»!", q:3, react:"STAY BRUTAL!! You already write like a 'zine veteran!! Issue #3 will be LEGENDARY!", why:'現場(ライブ・レコ屋・フライヤー)を足で取材する'},
+          {t:"A Tokyo «scene report»?! Honored. Gigs, record shops, flyers — I cover it all. «Stay hardcore»!", q:3, react:"STAY HARDCORE!! You already write like a 'zine veteran!! Issue #3 will be LEGENDARY!", why:'現場(ライブ・レコ屋・フライヤー)を足で取材する'},
           {t:"I can try... but my English is not so good.", q:1, react:"Perfect English is for SCHOOL! 'Zine English needs only PASSION and exclamation marks!!!"},
           {t:"Sorry, I only go to big arena shows. Small «live house» gigs are too dirty for me.", q:-3, react:"TOO DIRTY?! The underground IS the dirt, Tokyo! The next big band is playing in those small rooms RIGHT NOW!", why:'小さなライブハウス(地下シーン)を避け、大会場の有名バンドしか観ない'},
         ]},
-      { npc:["«Airmail» to Japan is EXPENSIVE! My allowance is gone. Totally gone.","Next letter, please include an «IRC» — International Reply Coupon.","Also: a «flyer» of any Tokyo band, for my 'zine wall! And... have you heard '«Bonded by Blood»' yet?!","And CASBAH — are they a Tokyo «live house» band? That tape sounds DANGEROUS."],
-        jp:'日本への航空便は高い！小遣いが消えた。完全に消えた。次の手紙にはIRC——国際返信切手券を入れてくれ。あと東京のバンドのフライヤーも！zineの壁に貼るんだ。それと…Bonded by Bloodはもう聴いたか？！あとCASBAHって東京のライブハウスのバンドなのか？あのテープ、ヤバすぎる。',
+      { npc:["«Airmail» to Japan is EXPENSIVE! My allowance is gone. Totally gone.","Next letter, please include an «IRC» — International Reply Coupon.","Also: a «flyer» of any Tokyo band, for my 'zine wall!","And CASBAH — are they a Tokyo «live house» band? That tape sounds DANGEROUS."],
+        jp:'日本への航空便は高い！小遣いが消えた。完全に消えた。次の手紙にはIRC——国際返信切手券を入れてくれ。あと東京のバンドのフライヤーも！zineの壁に貼るんだ。それとCASBAHって東京のライブハウスのバンドなのか？あのテープ、ヤバすぎる。',
         vocab:{'IRC':'国際返信切手券(相手国で切手に交換できる券。文通トレードの必需品)','flyer':'フライヤー(ライブ告知ビラ。zine文化の収集対象)'},
         choices:[
-          {t:"Two «IRC»s enclosed, plus a CASBAH flyer and Shinjuku record-shop stickers. And YES — Bonded by Blood «rips»! CASBAH is pure Tokyo live house thrash — sweat, noise, no mercy.", q:3, react:"STICKERS?! My binder is READY! And yes — Norway is going CRAZY for that album!", why:'IRC・フライヤー・現地の情報。トレード相手への気配りが完璧'},
+          {t:"Two «IRC»s enclosed, plus a CASBAH flyer and a sticker from a metal shop in Shibuya. CASBAH is Tokyo-area live house thrash — sweat, noise, no mercy.", q:3, react:"STICKERS?! My binder is READY! 'Sweat, noise, no mercy' — that goes on the cover of issue #3!", why:'IRC・フライヤー・メタル専門店のステッカー。トレード相手への気配りが完璧(当時の渋谷にはデモテープを扱う専門店があった)'},
           {t:"What is an IRC? I will ask at the post office tomorrow.", q:0, react:"Ask them! The post office ladies know us traders by NAME now. We are famous. Locally."},
           {t:"No flyer, sorry — I never go to gigs. I just read about the bands in magazines.", q:-2, react:"Only MAGAZINES?! Reading about metal is not LIVING metal, Tokyo! Go to a gig. Bring me a flyer. That's an order!", why:'ライブに行かず、雑誌の記事だけでシーンを語る'},
         ]},
-      { npc:["Package sent today! Inside: my band's demo, 'zine issue #2, and Norwegian chocolate.","Right now my deck is playing «Bathory». Norwegian winter + Bathory = perfect darkness.","The chocolate may arrive... not in its best shape. It is the THOUGHT that counts!","Write back soon. «Stay brutal», my Tokyo brother!"],
-        jp:'今日、荷物を送った！中身は俺のバンドのデモ、zine第2号、そしてノルウェーのチョコ。いまデッキではBathoryが回ってる。ノルウェーの冬にBathory、完璧な暗黒だ。チョコは…万全の形では届かないかもしれない。大事なのは気持ちだ！すぐ返事をくれ。ブルータルであれ、東京の兄弟！',
-        vocab:{},
+      { npc:["BIG question, Tokyo! Every trader in Norway is screaming about «Bonded by Blood»!","Exodus — the «Bay Area» band Kirk Hammett started before Metallica «grabbed» him.","Have you got it yet? Tell me EVERYTHING."],
+        jp:'でかい質問だ、東京！ノルウェー中のトレーダーが『Bonded by Blood』で大騒ぎしてる！Exodus——カーク・ハメットがMetallicaにかっさらわれる前に作ったベイエリアのバンドだ。もう手に入れたか？全部教えてくれ。',
+        vocab:{'Bonded by Blood':'Exodusの1985年のデビュー作。ベイエリア・スラッシュの名盤','Bay Area':'ベイエリア(サンフランシスコ湾岸)。80年代前半にスラッシュの本場になった','grabbed':'かっさらった(grab＝ひっつかむ)。カーク・ハメットは1983年にExodusからMetallicaへ','import':'輸入盤。国内盤が出る前に西新宿の輸入盤店で買うのが当時の常識','Ride the Lightning':'Metallicaの2nd(1984)。1曲目は「Fight Fire with Fire」','chills':'ゾクッとする感覚(give me chills＝鳥肌が立つ)','A Lesson in Violence':'『Bonded by Blood』A面4曲目。「暴力の教訓」','joined at the hip':'腰でつながった(双子)＝切っても切れない。ジャケットは天使と悪魔の結合双生児の赤ん坊'},
         choices:[
-          {t:"«Stay brutal», OLAV! Tonight Tokyo plays Mercyful Fate, «Come to the Sabbath», for you. «Keep the metal alive»!", q:3, react:"COME TO THE SABBATH?! Perfect choice!! Fastest, darkest trader in the EAST!! «\\m/»", why:'暗黒には暗黒で返す。曲名で返事をするのがトレーダーの粋'},
+          {t:"Got the UK «import» in Shinjuku! BURRN! gave it only 58 — 'razor riffs, neck-wrecking rhythms, but no «chills» like the opener of «Ride the Lightning».' I disagree: «A Lesson in Violence» gives me chills EVERY time!", q:3, react:"58?! For BONDED BY BLOOD?! Your magazine needs a LESSON IN VIOLENCE! ...But you judged with your OWN ears. True trader, Tokyo!", why:'BURRN!は1985年、英国盤(Music For Nations)の『Bonded by Blood』に58点。「鋭角的なリフも首筋を痛めそうなリズムもあるが、Metallica『Ride the Lightning』の1曲目のような、背筋がゾクッと来るカッコよさがない」という評。雑誌の評価を伝えたうえで、自分の耳で反論できている'},
+          {t:"Not yet — the «import» LP costs a fortune in Tokyo. Could you dub it for me?", q:1, react:"An ALBUM?! Remember the code: albums we BUY! ...OK. ONE song at the end of your next tape. A trailer. Then you BUY it."},
+          {t:"Exodus? Sounds like a Bible movie. Is it Christian rock?", q:-3, react:"A BIBLE MOVIE?! Look at the cover, Tokyo — a good baby and an EVIL baby, «joined at the hip»! This is Kirk Hammett's first band, man!", why:'バンド名の字面だけで判断している。Exodusは元Metallicaのカーク・ハメットが結成した、ベイエリア・スラッシュの代表格'},
+        ]},
+      { npc:["Package sent today! Inside: my band's demo, 'zine issue #2, and Norwegian chocolate.","Right now my deck is playing «Bathory». Norwegian winter + Bathory = perfect darkness.","The chocolate may arrive... not in its best shape. It is the THOUGHT that counts!","«Write or rot»! «Black Thrash wishes» from Norway!"],
+        jp:'今日、荷物を送った！中身は俺のバンドのデモ、zine第2号、そしてノルウェーのチョコ。いまデッキではBathoryが回ってる。ノルウェーの冬にBathory、完璧な暗黒だ。チョコは…万全の形では届かないかもしれない。大事なのは気持ちだ！書くか、腐るか！ノルウェーからブラック・スラッシュな祝福を！',
+        vocab:{'Write or rot':'書くか、腐るか！＝返事をくれ(1987年のノルウェーのファンジンの決まり文句)','Black Thrash wishes':'ブラック・スラッシュな祝福を(1985年のデンマークのファンジンにある手紙の締め)',"Thrash 'til death":'死ぬまでスラッシュ','Keep the faith':'信念を貫け(80年代の誌面にある締め)'},
+        choices:[
+          {t:"«Thrash 'til death», OLAV! Tonight Tokyo plays Mercyful Fate, «Come to the Sabbath», for you. «Keep the faith»!", q:3, react:"COME TO THE SABBATH?! Perfect choice!! Fastest, darkest trader in the EAST!! «\\m/»", why:'暗黒には暗黒で返す。曲名で返事をするのがトレーダーの粋'},
           {t:"Thank you for the chocolate. I will eat it regardless of its shape.", q:1, react:"A true warrior eats the melted chocolate. RESPECT, Tokyo."},
           {t:"Thanks! But Bathory is too dark for me. Do you have anything happier, with keyboards?", q:-2, react:"HAPPIER?! With KEYBOARDS?! This is METAL, not a birthday party! The darkness is the POINT, Tokyo!", why:'暗さこそ魅力なのに「明るい曲がいい」と言う'},
         ]},
@@ -16698,17 +16751,23 @@ const SCENARIOS = {
 const CHOICE_JP = {"Hell yeah! Born ready — let's make this building shake!":"当たり前だ！生まれた時から準備万端——この建物を揺らしてやろうぜ！","Ready! I memorized the setlist and brought spare batteries.":"準備OKです！セットリストは暗記して、予備の電池も持ってきました。","Totally ready, dude! Your new single is so catchy — very radio-friendly!":"バッチリっす！新曲めっちゃキャッチーですよね、ラジオ受けしそう！","Found it. Steel studs polished. Your armor awaits, warrior.":"見つけました。鋲も磨いておきました。鎧がお待ちです、戦士よ。","Found it... but it smells like a tour bus. Shall I wash it?":"見つけました…けどツアーバスの臭いがします。洗いましょうか？","Leather is out this season. I got you a pastel blazer — very fresh, very now!":"革は今季もう古いです。パステルのジャケット用意しました、爽やかで今っぽいですよ！","They'll sing it back to you. Every word — ask Deep Purple. Tokyo crowds are die-hard.":"全部歌い返してきますよ。一語残らず——ディープ・パープルに聞いてみて。東京の客は筋金入りです。","Quiet during the verses — then the chorus EXPLODES. Trust the silence.":"Aメロは静か、でもサビで爆発します。その沈黙を信じて。","Open with a soft ballad instead? Ease them in gently, very classy.":"代わりに静かなバラードで始めては？優しく慣らす感じで、上品ですよ。","Backup axe tuned, spare strings in my pocket. Stand and fight.":"予備のギターはチューニング済み、替え弦はポケットに。立ち上がって闘いましょう。","Two hours is plenty. Breathe. I'll restring it myself.":"2時間あれば十分です。深呼吸を。弦は俺が張り替えます。","The venue has a keyboard backstage — synth solos are the future!":"楽屋にキーボードがありますよ——シンセソロこそ未来です！","...STEEL OATH kills!":"…STEEL OATHは殺す！","...STEEL OATH plays HARDER!":"…STEEL OATHはもっと激しく演奏する！","...STEEL OATH entertains the whole family!":"…STEEL OATHは家族みんなを楽しませる！","Die with your boots on. Fear is proof you're alive — that's why they follow you.":"靴を履いたまま死ね、ですよ。恐怖は生きている証——だからみんなあなたについてくる。","Even steel bends before it's forged. The fear forged you.":"鋼鉄だって鍛えられる前は曲がる。その恐怖があなたを鍛えたんです。","Try chamomile tea and some gentle meditation before the show!":"本番前にカモミールティーと軽い瞑想を試してみては！","They scream. You return. One more time! The encore is a sacred ritual.":"客が叫ぶ。あなたが戻る。もう一回！アンコールは神聖な儀式です。","You take a 10-minute break for 15 minutes — see you in 20!":"15分間の10分休憩を取って——20分後にまた会おう、ですね！","The house lights come on and everyone goes home politely.":"客電がついて、みんな行儀よく帰ります。","See you in hell, JAKE!":"地獄で会おう、JAKE！","Good luck out there!":"頑張ってください！","Break a leg! Love and peace, brother!":"成功を祈ってます！ラブ＆ピースだよ、兄弟！","Greetings, brother of steel! We play loud because we can!":"やあ、鋼鉄の兄弟！爆音で鳴らすのは、それができるからだ！","Hi Randy! Metal rules. But maybe obey your mom at midnight?":"やあランディ！メタル最高。でも夜中はお母さんの言うことを聞いたら？","Hey dude! I love metal too — especially the acoustic unplugged versions!":"よう！俺もメタル好きだよ——特にアコースティックのアンプラグド版がね！","Whitesnake knows — in the still of the night, wounds heal. Write that ballad.":"ホワイトスネイクが知ってる——静まり返った夜に、傷は癒える。そのバラードを書けよ。","Doves are a fire hazard near pyro. Use ONE dove. Tasteful.":"火薬の近くのハトは火事の元だ。ハトは1羽にしとけ。それが上品。","Forget ballads — write a cheerful synth-dance track to feel better!":"バラードなんか忘れて、明るいシンセのダンス曲を書いて元気出せよ！","地獄 means HELL. The obi is armor for the record.":"「地獄」はHELLって意味だ。帯はレコードの鎧なんだよ。","It means hell. But honestly, the obi is just marketing paper.":"地獄って意味。でも正直、帯なんてただの宣伝の紙だよ。","It means a type of noodle.":"麺の一種って意味だよ。","Keep your hair long and your amplifiers loud!":"髪は長く、アンプは爆音のままでいろ！","Dads never get it. Mine calls my records 'noise'. We endure, brother.":"親父ってのは分かってくれない。うちのもレコードを「騒音」って言う。耐えようぜ、兄弟。","Compromise: trim it short, but wear a tiny metal pin on your collar!":"妥協案：髪は短く切って、襟に小さいメタルのピンを付けたら！","To hell and back, brother. Until the next letter!":"地獄の果てまで、兄弟。次の手紙まで！","Enjoy the meatloaf. The food, not the singer.":"ミートローフを楽しんで。料理の方ね、歌手じゃなくて。","P.S. Try listening to something softer before bed. For health!":"追伸：寝る前はもっと静かな曲を聴いてみたら。健康のために！","Duke? Saw your ad. Lead guitar, own gear, zero ego. When's the audition?":"デューク？広告見た。リードギター、機材持参、エゴなし。オーディションはいつだ？","Hello. I am calling regarding the advertisement, if it is convenient.":"もしもし。広告の件でお電話しました、ご都合よろしければ。","Hi! I play everything — metal, disco, wedding gigs, whatever pays!":"どうも！何でも弾きます——メタル、ディスコ、結婚式の余興、金になるなら何でも！","Priest's British steel, Maiden's galloping bass. 'The Number of the Beast' changed my life.":"プリーストの英国鋼鉄、メイデンの疾走するベース。『魔力の刻印』が人生を変えた。","Everything from delta blues to Bach. Music is music, no walls.":"デルタ・ブルースからバッハまで全部。音楽は音楽、壁はない。","Whatever's on the radio charts this week — I keep it current!":"今週ラジオのチャートに入ってるやつなら何でも——流行は押さえてる！","Flying V into a full Marshall stack. Loud enough to wake the dead.":"フライングVをマーシャルのフルスタックに直結。死者も目覚める爆音だ。","A good guitar, a borrowed amp — but my chops are real.":"いいギターと借り物のアンプ——でも腕は本物だ。","I mostly compose on my new keyboard — it's very modern!":"作曲はほとんど新しいキーボードでやってます——すごく今風でしょ！","Metal, till the end of time. Everything else is decoration.":"メタルだ、時の終わりまで。他は全部ただの飾りだ。","The metal. ...The beer is a close second. I won't lie to you.":"メタルだ。…ビールは僅差の2位。嘘はつかない。","Mostly the image! The hair, the leather — I look amazing on stage!":"主に見た目！髪と革——ステージ映えするんですよ俺！","Three songs by Saturday? I'll learn five. See you on 7th.":"土曜までに3曲？5曲覚えてくる。7番街で会おう。","Saturday is difficult for me... could we possibly do Sunday?":"土曜はちょっと厳しくて…日曜にしてもらえませんか？","Could I just mime along the first time? To learn the vibe?":"最初は当てぶりだけでもいいですか？雰囲気をつかむために。","Night, sorcery, evil spells — in Japan the obi would say 魔性. It kills.":"夜、魔術、邪悪な呪文——日本の帯なら「魔性」と書くね。最高だ。","It's good. But consider an umlaut: NÏGHT SÖRCERY.":"いいね。でもウムラウトを付けたら？NÏGHT SÖRCERY。","Honestly? It sounds like a perfume brand.":"正直に？香水のブランド名みたいだ。","Greetings from Tokyo! My trade list is enclosed — your list gets mine!":"東京より挨拶を！トレードリスト同封した——君のリストと俺のリストを交換だ！","Hello. I found your address in a fanzine. May we exchange tapes, please?":"こんにちは。ファンジンで住所を見つけました。テープを交換していただけますか？","Send me your rarest tapes first. Then I will decide if I send mine.":"まず君の一番レアなテープを送ってくれ。それから俺のを送るか決める。","TDK chrome C-60, Dolby OFF, first-generation dub. The underground deserves the best.":"TDKクロームのC-60、ドルビーOFF、一次ダビングで。地下シーンには最高のものを。","I only have normal position tapes right now. Is that OK?":"今ノーマルテープしかないんだけど、それでもいい？","I'll dub you a copy of my friend's copy of his cousin's copy. Fifth generation!":"友達のいとこのコピーの、そのまたコピーをダビングしてあげる。5次コピーだ！","No rip-offs — the scene runs on trade, not money. Dub for trade, never for profit.":"騙しはなしだ——シーンは金じゃなく交換で回ってる。ダビングは交換のため、儲けのためじゃない。","Demos we trade. Albums we BUY — tell him to get the real vinyl and support the band.":"デモは交換、アルバムは買う——本物のレコードを買ってバンドを支えろって言ってやれ。","Take the money! Sell many copies — you could fund your own band with it!":"金はもらっとけ！たくさん売れば——自分のバンドの資金にできるぞ！","A Tokyo scene report?! Honored. Gigs, record shops, flyers — I cover it all. Stay brutal!":"東京のシーンレポート？！光栄だ。ライブ、レコ屋、フライヤー——全部書くよ。ブルータルであれ！","I can try... but my English is not so good.":"やってみるけど…英語があまり得意じゃなくて。","Photocopying at the office? That is stealing paper. I must decline.":"会社でコピー？それは紙の窃盗だ。お断りする。","Two IRCs enclosed, plus a CASBAH flyer and Shinjuku record-shop stickers. And YES — Bonded by Blood rips! CASBAH is pure Tokyo live house thrash — sweat, noise, no mercy.":"IRCを2枚同封、CASBAHのフライヤーと新宿のレコ屋のステッカーも。そしてYES——Bonded by Bloodは最高だ！CASBAHは純度100%の東京ライブハウス・スラッシュ——汗、轟音、容赦なし。","What is an IRC? I will ask at the post office tomorrow.":"IRCって何？明日郵便局で聞いてみる。","Postage is your problem. A trade is just the tapes, no?":"送料はそっちの問題だろ。トレードってテープだけの話じゃないの？","Stay brutal, OLAV! The Tokyo scene report is already in the mail. Keep the metal alive!":"ブルータルであれ、OLAV！東京シーンレポートはもう投函した。メタルを生かし続けろ！","Thank you for the chocolate. I will eat it regardless of its shape.":"チョコをありがとう。形がどうであれ食べるよ。","Next time, send two chocolates.":"次はチョコ2枚送ってくれ。"};
 Object.assign(CHOICE_JP,{"Totally! I know you guys from MTV — the video with the explosions and the girl in the cage!":"もちろん！MTVで知ってます——爆発とケージの女の子が出てくるビデオの！","Found it! And look — I'm wearing a STEEL OATH T-shirt tonight to show support!":"見つけました！それに見て——今夜は応援のためにSTEEL OATHのTシャツを着てます！","They'll sing it back to you. Every word. The 'Crazy Nights' crowd doesn't sit down — Tokyo is die-hard.":"全部歌い返してきますよ。一語残らず。『Crazy Nights』で盛り上がる客は座りません——東京は筋金入りです。","Japanese girls love ballads. Open with your love song — and maybe slow down the fast parts?":"日本の女の子はバラードが好きです。ラブソングで始めて——速いところも少しゆっくりにしては？","No problem — the opening act's keyboard player can play your solo on synth. It sounds just like a guitar!":"大丈夫です——前座のキーボードの人がソロをシンセで弾けます。ギターそっくりの音ですよ！","...STEEL OATH makes great background music for studying!":"…STEEL OATHは勉強中のBGMに最高！","Just smile and wave like Duran Duran. The girls will scream anyway!":"デュラン・デュランみたいに笑って手を振るだけでいいですよ。どうせ女の子たちは叫びますから！","Half the crowd leaves early to beat the rush at the train station.":"客の半分は駅の混雑を避けて早めに帰りますよ。","Break a leg! Oh — could you sign my tape? It's your greatest hits.":"頑張って！あ——僕のテープにサインもらえます？ベスト盤なんですけど。"});
 Object.assign(CHOICE_JP,{"Cool! I love metal too — Bon Jovi's Livin' on a Prayer is the heaviest song ever!":"いいね！俺もメタル大好き——Bon Joviの『Livin' on a Prayer』が史上最強にヘヴィな曲だよね！","Great idea! Make it soft and add a saxophone solo, like the love songs on the radio!":"いいね！優しい感じにして、ラジオのラブソングみたいにサックスソロを入れようよ！","地獄 means HELL. The obi is armor for the record. Collectors keep it forever.":"地獄はHELLって意味だ。帯はレコードの鎧。コレクターは一生捨てない。","It means hell. But I always throw the obi in the trash. It's just paper, right?":"地獄って意味。でも帯はいつもゴミ箱行きだよ。ただの紙でしょ？","Your dad has a point. Metal is just a phase — I'll quit when I go to college.":"親父さんの言うことも一理ある。メタルなんて一時のもの——俺も大学に入ったらやめるよ。","Not yet — but next Tokyo show, I'm in the pit. If someone falls, we pick him up. That's the code!":"まだない——でも次の東京のライブではピットに入る。誰かが倒れたら皆で起こす。それが掟だ！","I watch from the back. Somebody has to hold the jackets.":"俺は後ろから見てる。誰かがジャケットを預からなきゃな。","I went to a show once — in white jeans. I sat in my seat and ate nachos the whole time!":"一回ライブに行ったよ——白いジーンズで。ずっと席に座ってナチョス食べてた！","P.S. My favorite metal song is 'The Final Countdown' — the keyboard part is SO cool!":"追伸：俺の一番好きなメタルの曲は『The Final Countdown』——キーボードのとこが最高にカッコいい！","Hi! I've got the look — big hair, leather pants. I just need to learn guitar. How hard can it be?":"どうも！見た目は完璧——盛った髪にレザーパンツ。あとはギターを覚えるだけ。そんなに難しくないでしょ？","Maiden's galloping bass, Priest's British steel — and Metallica's Seek & Destroy. Fast is the only speed.":"メイデンの疾走するベース、プリーストの英国鋼鉄——それにMetallicaの『Seek & Destroy』。速さこそ唯一の速度だ。","Quiet Riot! Cum On Feel the Noize — I heard it on the radio twice this week!":"Quiet Riot！『Cum On Feel the Noize』——今週ラジオで2回聴いたよ！","A tiny practice amp, no distortion. I like a clean, sparkly sound — like The Police!":"小さい練習用アンプで、歪みなし。クリーンでキラキラした音が好きなんだ——ポリスみたいな！","Mostly the image! I spend two hours on my hair before every gig. I borrow my sister's hairspray!":"主に見た目！ライブ前は毎回2時間かけて髪をセットする。妹のヘアスプレーを借りてね！","Could I bring a tape of me playing and just mime along? I sound better on tape.":"自分の演奏テープを持ってって、当て振りだけでもいいですか？テープの方が上手く聴こえるんで。","Change it to something sweeter so the radio will play you — like 'Night Kisses'!":"もっと甘い名前にしたらラジオでかけてもらえるよ——『Night Kisses』とか！","I have no demos, but I can tape the Top 40 from the radio for you every week!":"デモは持ってないけど、毎週ラジオのトップ40を録音して送れるよ！","Sorry, I only go to big arena shows. Small live house gigs are too dirty for me.":"ごめん、大きな会場のライブしか行かないんだ。小さいライブハウスは汚くて無理。","No flyer, sorry — I never go to gigs. I just read about the bands in magazines.":"ごめん、フライヤーはない——ライブには行かないんだ。バンドのことは雑誌で読むだけ。","Stay brutal, OLAV! Tonight Tokyo plays Mercyful Fate, Come to the Sabbath, for you. Keep the metal alive!":"ブルータルであれ、OLAV！今夜東京では君のためにMercyful Fateの『Come to the Sabbath』をかける。メタルを生かし続けろ！","Thanks! But Bathory is too dark for me. Do you have anything happier, with keyboards?":"ありがとう！でもBathoryは暗すぎるかな。もっと明るい、キーボードが入ってるやつない？"});
+Object.assign(CHOICE_JP,{"Hell yes! Born ready — let's make this building shake!":"当然だ！生まれた時から準備OK——この建物を揺らしてやろうぜ！","Open with a song with Tokyo in the title, and learn one line in Japanese. I'll hold up a cue card for you — just in case.":"タイトルに「Tokyo」が入った曲で始めて、日本語を一言覚えよう。念のため、俺がカンペを掲げておくよ。","Just shout Arigato, Tokyo! They'll love it.":"「アリガト、トーキョー！」って叫べばいい。絶対喜ぶよ。","Cover the No.1 idol song from the TV hit chart! Everybody in Japan knows it!":"テレビのヒットチャート1位のアイドルの曲をカバーしよう！日本中みんな知ってるから！","I'm 17. Hobby: headbanging. Mostly into Metallica, Slayer and Anthrax. Thrash 'til death!":"17歳。趣味はヘッドバンギング。一番ハマってるのはMetallica、Slayer、Anthrax。死ぬまでスラッシュ！","My name is Taro. I am seventeen years old. My hobby is listening to music.":"私の名前はタロウです。17歳です。趣味は音楽鑑賞です。","Tell your dad: Metal rules! We will never wimp out — hair long, volume up.":"親父さんに言ってやれ：メタル最高！俺たちは絶対に日和らない——髪は長く、音はでかく。","Our big halls have SEATS — dive there and you hit a chair! But at the live house, I'm in the pit. Somebody falls, we pick him up. That's the code!":"こっちの大ホールは椅子席だから、ダイブしたら椅子に激突だ！でもライブハウスなら俺はピットにいる。誰かが倒れたら皆で起こす。それが掟だ！","Keep the faith, brother! Rage on till the next letter!":"信念を貫けよ、兄弟！次の手紙まで荒れ狂え！","Duke? Saw your ad. Lead guitar, own equip, own car, zero ego. When's the audition?":"DUKE？広告を見た。リードギター、自前の機材、車あり、エゴなし。オーディションはいつだ？","Hi! Are beginners welcome? I just bought a guitar last week — but I've got the look!":"どうも！初心者歓迎ですか？先週ギターを買ったばかりだけど——見た目はバッチリです！","The ads say image is a must. I say the MUSIC is a must. Everything else is decoration.":"広告はどれも「イメージ必須」って書いてる。俺に言わせりゃ「音楽が必須」だ。それ以外は飾りさ。","Side A: CASBAH, first-generation dub from the master. Side B: OUTRAGE reh. stuff. No empty minutes!":"A面はCASBAH、マスターからの一次ダビング。B面はOUTRAGEのリハ音源。空白の1分も作らないぜ！","I will use your tape. But my deck is old — the sound may be a little bad.":"君のテープを使うよ。でもうちのデッキは古いから、音が少し悪いかも。","A Tokyo scene report?! Honored. Gigs, record shops, flyers — I cover it all. Stay hardcore!":"東京のシーンレポート？！光栄だ。ライブ、レコ屋、フライヤー——全部取材する。硬派であれ！","Two IRCs enclosed, plus a CASBAH flyer and a sticker from a metal shop in Shibuya. And YES — Bonded by Blood rips! CASBAH is Tokyo-area live house thrash — sweat, noise, no mercy.":"IRCを2枚同封、それにCASBAHのフライヤーと渋谷のメタル専門店のステッカーも。それと、そう——Bonded by Bloodは最高だ！CASBAHは東京界隈のライブハウス・スラッシュ——汗、轟音、容赦なしだ。","Thrash 'til death, OLAV! Tonight Tokyo plays Mercyful Fate, Come to the Sabbath, for you. Keep the faith!":"死ぬまでスラッシュだ、OLAV！今夜、東京は君のためにMercyful Fateの「Come to the Sabbath」をかける。信念を貫け！"});
+Object.assign(CHOICE_JP,{"Confession: BURRN! trashed their first album in '85 — 41 out of 100! 'Too many riffs, the song changes every minute, you can't even headbang — and the production is terrible.' But Peace Sells has a REAL sound. I'm a believer now.":"白状する：BURRN!は85年にあいつらのデビュー作を酷評した——100点満点で41点！「リフが多すぎ、曲が1分ごとに変わる、頭も振れない——しかも録音がヒドイ」って。でもPeace Sellsはちゃんとした音だ。今じゃ俺も信者だよ。","Sometimes too fast for me. But the bass intro of 'Peace Sells' — that I love.":"俺にはちょっと速すぎる時もある。でも「Peace Sells」のベースのイントロ——あれは大好きだ。","I didn't buy it. BURRN! gave their first album 41 points, so it must be bad. I only buy records with high scores.":"買ってない。BURRN!がデビュー作に41点をつけてたから、きっとダメなんだろ。俺は点数の高いレコードしか買わないんだ。"});
+Object.assign(CHOICE_JP,{"Two IRCs enclosed, plus a CASBAH flyer and a sticker from a metal shop in Shibuya. CASBAH is Tokyo-area live house thrash — sweat, noise, no mercy.":"IRCを2枚同封、それにCASBAHのフライヤーと渋谷のメタル専門店のステッカーも。CASBAHは東京界隈のライブハウス・スラッシュ——汗、轟音、容赦なしだ。","Got the UK import in Shinjuku! BURRN! gave it only 58 — 'razor riffs, neck-wrecking rhythms, but no chills like the opener of Ride the Lightning.' I disagree: A Lesson in Violence gives me chills EVERY time!":"新宿でイギリス盤を手に入れた！BURRN!はたった58点——「鋭いリフ、首を痛めそうなリズム、でもライド・ザ・ライトニングの1曲目みたいなゾクッとくる感じがない」って。俺は反対だ。「A Lesson in Violence」は毎回ゾクッとくる！","Not yet — the import LP costs a fortune in Tokyo. Could you dub it for me?":"まだなんだ——東京じゃ輸入盤LPがすごく高くて。ダビングしてくれない？","Exodus? Sounds like a Bible movie. Is it Christian rock?":"Exodus？聖書の映画みたいな名前だね。クリスチャン・ロック？"});
 const choiceJp=t=>CHOICE_JP[t.replace(/«|»/g,'')]||'';
 const REACT_JP = {"THAT'S the answer! I like you already, kid.":"それだよ、その答え！もう気に入ったぜ、坊主。","Batteries... practical. But where's the FIRE, kid? I need FIRE.":"電池か…実用的だな。だが炎はどこだ、坊主？俺に必要なのは炎だ。","CATCHY?! RADIO-FRIENDLY?! If it's not metal, it's crap! Strike one, poser.":"キャッチー？！ラジオ向き？！メタルじゃなきゃクソだ！ストライク1つ目だ、ポーザー。","My steel!! Now I'm invincible. You understand ARMOR, kid.":"俺の鋼鉄！！これで無敵だ。お前は鎧ってもんが分かってるな、坊主。","WASH it?! That smell is ten years of glory! ...Fine. Don't touch the smell.":"洗う？！その臭いは10年分の栄光だぞ！…まあいい。臭いには触るな。","PASTEL?! Do I look like a SYNTH-POP act?! The jacket. The BLACK one. NOW.":"パステル？！俺がシンセポップのバンドに見えるか？！ジャケットだ。黒いやつ。今すぐ。","Every word?! Now THAT gives me chills. Let's do this.":"一語残らず？！そいつは鳥肌もんだ。やってやろうぜ。","A slow burn, huh... I can work with a slow burn. Interesting country.":"じわじわ燃える、か…じわじわなら上等だ。面白い国だな。","OPEN with a BALLAD?! We open fast and brutal! The ballad is song NINE. Everyone knows that!":"バラードで始める？！オープニングは速く残忍に、だ！バラードは9曲目。常識だろ！","Backup AND spares?! Kid, you were BORN for this job.":"予備ギターに替え弦まで？！坊主、お前はこの仕事のために生まれてきたな。","...Yeah. Yeah, you're right. Deep breath. You're calm, kid. Scary calm.":"…ああ。そうだな、お前の言う通りだ。深呼吸だ。落ち着いてるな、坊主。怖いくらいに。","SYNTH SOLOS?! What did I JUST say?! No synths, no drum machines! Are you testing me?!":"シンセソロ？！今なんて言ったばかりだ？！シンセもドラムマシンもなし！俺を試してんのか？！","HAHA! You KNOW the law! Heavy metal is the law!":"ハハ！掟を分かってるな！ヘヴィメタルこそ掟だ！","Close. CLOSE. But the law says KILLS. Not 'harder'. KILLS. Write it down.":"惜しい。惜しいぞ。だが掟では「殺す」だ。「もっと激しく」じゃない。「殺す」。メモしとけ。","ENTERTAINS?! THE FAMILY?! We don't entertain, we DESTROY! Wimps go home!":"楽しませる？！家族を？！俺たちは楽しませない、ぶっ壊すんだ！軟弱者は帰れ！","...Where'd you learn THAT?! You're one of us now, kid.":"…そんなのどこで覚えた？！お前はもう俺たちの仲間だ、坊主。","...Did you just out-poet ME? In MY dressing room? ...Not bad. NOT BAD.":"…今、俺より詩的なこと言ったか？俺の楽屋で？…悪くない。悪くないぞ。","CHAMOMILE?! My pre-show ritual is SCREAMING. Let me hear you scream — that IS my meditation!":"カモミール？！俺の本番前の儀式は絶叫だ。「叫びを聞かせろ」——それが俺の瞑想だ！","EXACTLY! A sacred, LOUD ritual. You get it.":"その通り！神聖で、爆音の儀式だ。分かってるじゃないか。","HA! 'See you in 20'! You know the classics! Not bad, kid!":"ハ！「20分後に会おう」！定番ネタを知ってるな！やるな、坊主！","POLITELY?! The encore is SACRED! Scream for more or it didn't happen!":"行儀よく？！アンコールは神聖なんだ！「もっと」と叫ばなきゃ無かったも同然だ！","SEE YOU IN HELL, KID!! ...That's how metal says goodbye. PERFECT.":"地獄で会おうぜ、坊主！！…それがメタル流の別れの挨拶だ。完璧だ。","Luck?! We don't need luck. We have VOLUME.":"運？！運なんかいらない。俺たちには音量がある。","LOVE AND PEACE?! Get a grip, this ain't Woodstock! ...But you did good today, kid.":"ラブ＆ピース？！しっかりしろ、ここはウッドストックじゃない！…でも今日はよくやったぞ、坊主。","BROTHER OF STEEL!! Best first letter EVER. Framing it.":"鋼鉄の兄弟！！史上最高の第一便だ。額に入れて飾る。","Midnight is when the DOOM hits best... but OK. Headphones. Deal.":"真夜中こそドゥームが一番効くんだけど…まあいいや。ヘッドホンにする。約束だ。","UNPLUGGED?! My amplifier is crying somewhere. The PLUG is the whole POINT!":"アンプラグド？！俺のアンプがどこかで泣いてるよ。プラグこそが全てなのに！","THE NIGHT UNDERSTANDS ME. Coverdale understands me. YOU understand me.":"夜は俺を分かってくれる。カヴァーデイルも分かってくれる。そして君も分かってくれる。","...OK, one dove. Budget says zero doves, but a man can dream.":"…OK、ハトは1羽。予算的には0羽だけど、夢を見るのは自由だろ。","SYNTH-DANCE?! My pain deserves GUITARS! A ballad is metal CRYING, man!":"シンセのダンス曲？！俺の痛みにはギターがふさわしい！バラードはメタルの涙なんだよ！","HELL?! On a paper BELT?! Japan is the most metal country alive!!":"地獄？！紙の帯に？！日本は世界一メタルな国だ！！","JUST MARKETING?! My friend Kenji says the obi is the record's SOUL. I trust Kenji!":"ただの宣伝？！友達のケンジは帯はレコードの魂だって言ってたぞ。俺はケンジを信じる！","Noodle...? Wait. WAIT. Kenji says you LIED to me!! Hell noodles?!":"麺…？待て。待てよ。ケンジが君は嘘ついたって言ってる！！地獄麺だと？！","I'm framing THIS one too. On the wall. Next to the posters.":"これも額に入れる。壁に飾る。ポスターの隣に。","'Noise'! Why do all dads say the same exact WORD?! We endure!!":"「騒音」！なんで親父ってみんな同じ言葉を使うんだ？！耐えようぜ！！","TRIM IT?! The hair IS the flag, man! We will stop wearing black when they make a darker color — and I will NEVER cut my hair!":"切る？！髪は旗なんだよ！「もっと暗い色ができたら黒を着るのをやめる」——そして俺は絶対に髪を切らない！","TO HELL AND BACK!!! Best pen pal in the WORLD. \\m/":"地獄の果てまで！！！世界一のペンパルだ。\\m/","I will NOT enjoy it. But the joke? The joke I enjoy. Write soon!":"料理は楽しめない。でもそのジョーク？ジョークは楽しんだ。すぐ返事くれよ！","SOFTER?! I fall asleep to DOOM, friend. It's basically a lullaby. A very, VERY slow lullaby.":"もっと静かな曲？！俺はドゥームで寝るんだよ。ほぼ子守唄さ。とてつもなく遅い子守唄。","...Straight to business. I like you already. Most guys start with excuses.":"…いきなり本題か。もう気に入った。たいていの奴は言い訳から始めるからな。","Whoa, easy. This ain't a bank, man. But OK — you called. Talk.":"おいおい、固いな。ここは銀行じゃないぜ。でもまあいい——電話してきたんだ。話せ。","WHATEVER PAYS?! Did you even READ the ad?! No time wasters!":"金になるなら何でも？！広告ちゃんと読んだか？！冷やかしお断りだ！","GALLOPING. You said 'galloping'. And the Beast... yeah. You're living in the right decade, man.":"ギャロップ。「ギャロップ」って言ったな。それに『魔力の刻印』…ああ。お前は正しい時代を生きてるよ。","Deep. TOO deep. This is a metal band, professor, not a university.":"深い。深すぎる。ここはメタルバンドだ、教授。大学じゃない。","The CHARTS?! Who cares about the mainstream! Next answer decides your fate.":"チャート？！メインストリームなんか知るか！次の答えでお前の運命が決まる。","A V into a STACK. ...I just got chills. Don't tell the band I said that.":"Vをスタックに直結。…今、鳥肌が立った。俺がそう言ったってバンドには内緒な。","Borrowed, huh... Look, chops matter most. But get your OWN amp by Friday.":"借り物か…まあ、腕が一番大事だ。でも金曜までに自分のアンプを用意しろ。","A KEYBOARD?! Read my lips: No synths! This is a GUITAR audition!":"キーボード？！よく聞け：シンセはなしだ！これはギターのオーディションだぞ！","'Decoration'. HA! That's going on our first album. Metal first. ALWAYS.":"「飾り」か。ハ！それ、ファーストアルバムに使うわ。メタルが第一。いつだって。","HA! Honest! I respect honest. Beer IS second. Officially unofficial.":"ハ！正直だな！正直な奴は尊敬する。ビールは確かに2位だ。非公式に公式。","The IMAGE?! Man, that's the dictionary definition of a poser!":"見た目？！おい、それこそ辞書に載ってる「ポーザー」の定義そのものだ！","FIVE?! ...Saturday. Don't be late. Or early. Be METAL o'clock.":"5曲？！…土曜な。遅れるな。早すぎてもダメだ。「メタル時」に来い。","Rescheduling ALREADY?! ...Fine. Sunday. This is your one pass, man.":"もう日程変更か？！…いいだろう。日曜だ。見逃すのはこれ1回きりだぞ。","MIME?! This ain't television, man! Real amps! Real playing! REAL VOLUME!":"当て振り？！テレビじゃないんだぞ！本物のアンプ！本物の演奏！本物の音量だ！","The OBI would say... ma-sho? MA-SHO. That settles it. The name STAYS. Welcome aboard, man!":"帯なら…マ・ショウ？マショウ。決まりだ。名前はこのまま。ようこそ、バンドへ！","An UMLAUT. ...That's either genius or madness. I'm taking it to the band. Welcome aboard!":"ウムラウト。…天才か狂気かのどっちかだな。バンドに持ち帰る。ようこそ！","A PERFUME?! ...OK, my sister said the exact same thing. DON'T tell the drummer. See you Saturday anyway.":"香水？！…ああ、妹もまったく同じこと言ってた。ドラマーには言うなよ。とにかく土曜に会おう。","TOKYO!! My first Japanese trader!! The scene is TRULY worldwide now!!":"東京！！初めての日本のトレーダーだ！！シーンはついに本当に世界規模になった！！","So formal! Like a bank letter! But YES — send the list, Tokyo!":"堅苦しいな！銀行の手紙みたいだ！でもYES——リストを送ってくれ、東京！","'First and decide'?! That is EXACTLY how rip-offs talk! First rule: we send TOGETHER!":"「先に送れ、それから決める」？！それは詐欺師の口ぶりそのものだ！第一のルール：同時に送るんだ！","FIRST GENERATION?! Dolby OFF?! You are a PROFESSIONAL! My tape deck thanks you!":"一次ダビング？！ドルビーOFF？！君はプロだ！俺のテープデッキが感謝してる！","Normal position... OK, OK. But chrome next time! The cymbals DESERVE chrome!":"ノーマルか…OK、OK。でも次はクロームで！シンバルにはクロームがふさわしい！","FIFTH generation?! That is not music anymore, that is a SNOWSTORM with drums!":"5次コピー？！それはもう音楽じゃない、ドラム入りの吹雪だ！","YES. That is the code. The underground is not a SHOP. I told him: bring a tape and TRADE like a man!":"そう。それが掟だ。アンダーグラウンドは店じゃない。あいつに言ってやった：テープを持ってきて男らしくトレードしろ！","EXACTLY! Demo = trade. Album = buy! That is total support! You are wise, Tokyo.":"その通り！デモは交換、アルバムは購入！それこそ全面支援だ！賢いな、東京。","SELLING dubs?! That is a rip-off, man! Every 'zine in Europe would BAN my name!":"ダビングを売る？！それは詐欺だ！ヨーロッパ中のzineから俺の名前が締め出される！","STAY BRUTAL!! You already write like a 'zine veteran!! Issue #3 will be LEGENDARY!":"ブルータルであれ！！もうzineのベテランみたいな書きっぷりだ！！第3号は伝説になる！","Perfect English is for SCHOOL! 'Zine English needs only PASSION and exclamation marks!!!":"完璧な英語は学校のためのもの！zineの英語に必要なのは情熱と感嘆符だけだ！！！","...It is THREE pages, man. OK, ten. OK, I will ask my father properly. HAPPY, Tokyo?":"…たった3ページだぞ。わかった、10ページ。わかった、親父にちゃんと頼むよ。これで満足か、東京？","STICKERS?! My binder is READY! And yes — Norway is going CRAZY for that album!":"ステッカー？！バインダーの準備はできてる！そしてYES——ノルウェーはあのアルバムに熱狂してる！","Ask them! The post office ladies know us traders by NAME now. We are famous. Locally.":"聞いてみて！郵便局のおばさんたちは今や俺たちトレーダーの名前を覚えてる。有名人なんだ。地元限定で。","COLD, man! The scene runs on IRCs and kindness! ...But mostly IRCs.":"冷たいな！シーンはIRCと優しさで回ってるんだ！…でも主にIRC。","ALREADY in the mail?! Fastest trader in the EAST!! \\m/":"もう投函済み？！東洋最速のトレーダーだ！！\\m/","A true warrior eats the melted chocolate. RESPECT, Tokyo.":"真の戦士は溶けたチョコも食べる。リスペクトだ、東京。","TWO?! My allowance, man!! ...OK. Two. For Tokyo... two.":"2枚？！俺の小遣いが！！…わかった。2枚。東京のためなら…2枚。"};
 Object.assign(REACT_JP,{"From a VIDEO?! Name ONE song from our first album. ...Thought so. Strike one, poser.":"ビデオで知った？！1stアルバムの曲を1曲言ってみろ。…だろうな。ストライク1つ目だ、ポーザー。","OUR shirt? At OUR show?! Rule number one: you never wear the band's shirt to the band's gig. Turn it inside out, kid.":"俺たちのシャツを？俺たちのライブで？！掟その1：そのバンドのシャツをそのバンドのライブに着ていくな。裏返して着ろ、坊主。","SLOW DOWN THE FAST PARTS?! The fast parts ARE the song! We open fast and brutal. The ballad is song NINE!":"速いところをゆっくりに？！速いところこそが曲なんだ！オープニングは速く残忍に。バラードは9曲目だ！","'JUST LIKE A GUITAR'?! Nothing sounds like a guitar except a GUITAR! What did I JUST say? No synths!":"「ギターそっくり」？！ギターの音がするのはギターだけだ！今なんて言ったばかりだ？シンセはなし！","BACKGROUND MUSIC?! Metal is NEVER in the background! You don't study to it, you SURRENDER to it. Wimps go home!":"BGM？！メタルは決して背景じゃない！聴きながら勉強するもんじゃない、身を委ねるもんだ。軟弱者は帰れ！","...Maiden?! Where'd you learn THAT?! You're one of us now, kid.":"…メイデンか？！そんなのどこで覚えた？！お前はもう俺たちの仲間だ、坊主。","DURAN DURAN?! I'm a metal singer, not a PIN-UP! We don't smile for posters. We SCREAM.":"デュラン・デュラン？！俺はメタルシンガーだ、ピンナップじゃない！ポスターのために笑ったりしない。叫ぶんだ。","LEAVE BEFORE THE ENCORE?! For a TRAIN?! Real fans stay until the house lights come on. Trains can wait!":"アンコール前に帰る？！電車のために？！本物のファンは客電がつくまで残る。電車は待たせとけ！","GREATEST HITS?! We have TWO albums! Buy the REAL albums, kid. ...But you did good today.":"ベスト盤？！俺たちはまだアルバム2枚だぞ！本物のアルバムを買え、坊主。…でも今日はよくやった。"});
 Object.assign(REACT_JP,{"BON JOVI?! The HEAVIEST?! That's what my SISTER plays at the mall! Bon Jovi is for the radio. Metallica is for WAR!":"BON JOVI？！史上最強にヘヴィ？！それ、うちの姉貴がショッピングモールで流してるやつだぞ！Bon Joviはラジオ用。Metallicaは戦争用だ！","A SAXOPHONE SOLO?! In a METAL ballad?! The solo belongs to the GUITAR, man. ALWAYS. Even when I'm crying!":"サックスソロ？！メタルのバラードに？！ソロはギターのものだ。いつだって。俺が泣いてる時でもな！","THE TRASH?! Kenji says collectors would CRY! An LP without its obi is a knight without his ARMOR!":"ゴミ箱？！ケンジが言うにはコレクターが泣くぞ！帯のないLPは鎧のない騎士だ！","A PHASE?! Metal is not a PHASE, it is a WAY OF LIFE! We will stop wearing black when they make a darker color!":"一時のもの？！メタルはブームじゃない、生き方だ！「もっと暗い色ができたら黒を着るのをやめる」！","THE CODE!! You know the pit code! Somebody falls, everybody lifts. You're a true metalhead, Tokyo!":"掟だ！！ピットの掟を知ってるな！誰かが倒れたら全員で持ち上げる。お前は本物のメタルヘッドだ、東京！","The jacket guardian! Every pit needs one. Respect, brother.":"ジャケットの守護者！どのピットにも必要な存在だ。リスペクトだ、兄弟。","WHITE JEANS?! At a THRASH show?! The pit would eat you alive... and your nachos.":"白いジーンズ？！スラッシュのライブに？！ピットに丸ごと食われるぞ…ナチョスごとな。","The KEYBOARD part?! ...OK, it IS catchy. But it's not ARMOR, man. Go play Master of Puppets. Twice.":"キーボードのとこ？！…まあ、キャッチーなのは認める。でもあれは鎧じゃない。Master of Puppetsを聴け。2回な。","'LEARN GUITAR'?! This is a LEAD GUITAR ad, man! Look comes LAST. No time wasters!":"「ギターを覚える」？！これはリードギターの募集だぞ！見た目は最後だ。冷やかしお断り！","GALLOPING. And Seek & Destroy?! You're living in the right decade, man.":"ギャロップ。それにSeek & Destroy？！お前は正しい時代を生きてるよ。","One radio hit is your INFLUENCE?! Name the album. ...Any other song. Who cares about the mainstream!":"ラジオのヒット1曲が影響源？！アルバム名を言ってみろ。…他の曲でもいい。メインストリームなんか知るか！","NO DISTORTION?! Clean and SPARKLY?! Metal without distortion is just... a sandwich without meat!":"歪みなし？！クリーンでキラキラ？！歪みのないメタルなんて…肉の入ってないサンドイッチだ！","Your SISTER'S hairspray?! Two hours of HAIR?! Practice two hours, THEN talk to me. That's the definition of a poser!":"妹のヘアスプレー？！髪に2時間？！2時間練習してから話しかけろ。それこそポーザーの定義だ！","NIGHT KISSES?! We're a metal band, not a LIPSTICK! Evil names don't beg the radio. ...See you Saturday anyway.":"NIGHT KISSES？！俺たちはメタルバンドだ、口紅じゃない！邪悪な名前はラジオに媚びない。…とにかく土曜に会おう。","The TOP 40?! I said DEMOS! The underground does not live on the radio, Tokyo!":"トップ40？！デモと言ったんだ！アンダーグラウンドはラジオの中には住んでないぞ、東京！","TOO DIRTY?! The underground IS the dirt, Tokyo! The next big band is playing in those small rooms RIGHT NOW!":"汚い？！アンダーグラウンドとはその汚さそのものだ、東京！次の大物バンドは今まさにその小さな部屋で演奏してるんだぞ！","Only MAGAZINES?! Reading about metal is not LIVING metal, Tokyo! Go to a gig. Bring me a flyer. That's an order!":"雑誌だけ？！メタルを読むのはメタルを生きることじゃないぞ、東京！ライブに行け。フライヤーを持ってこい。命令だ！","COME TO THE SABBATH?! Perfect choice!! Fastest, darkest trader in the EAST!! \\m/":"COME TO THE SABBATH？！完璧な選曲だ！！東洋最速にして最暗黒のトレーダー！！\\m/","HAPPIER?! With KEYBOARDS?! This is METAL, not a birthday party! The darkness is the POINT, Tokyo!":"明るいの？！キーボード入り？！これはメタルだ、誕生日パーティーじゃない！暗さこそが肝なんだ、東京！"});
+Object.assign(REACT_JP,{"Every word?! And I heard they throw PRESENTS on stage here — Maiden got BANANAS! Let's do this.":"一言一句？！それに、ここじゃステージにプレゼントが飛んでくるらしいな——メイデンはバナナをもらったそうだ！よし、やるぞ。","A CUE CARD! In case I forget where I AM! Kid, you think of EVERYTHING.":"カンペか！俺が自分の居場所を忘れたとき用の！お前は何でも考えてるな。","Arigato... ARIGATO! I've been practicing that one in the mirror. Good call.":"アリガト…アリガト！鏡の前で練習してたんだ、それ。いい判断だ。","An IDOL song?! From a TV CHART?! We're STEEL OATH, not a jingle! The metal kids came for METAL, kid!":"アイドルの曲？！テレビのチャートの？！俺たちはSTEEL OATHだ、CMソングじゃない！メタルキッズはメタルを聴きに来てるんだぞ！","THRASH 'TIL DEATH!! Best first letter EVER. I'm framing it.":"死ぬまでスラッシュ！！史上最高の最初の手紙だ。額に入れて飾るよ。","Textbook English! But WHAT music, Taro?! Next letter: band names. LOTS of band names.":"教科書どおりの英語だ！でも何の音楽だよ、タロウ？！次の手紙はバンド名を。たっぷりとな。","BON JOVI?! The HEAVIEST?! My SISTER plays that at the mall! Metallica once played between Ratt and Bon Jovi — James called it a poser sandwich!":"BON JOVI？！一番ヘヴィ？！あれは姉貴がショッピングモールで聴いてるやつだ！Metallicaは一度RattとBon Joviに挟まれて演奏した——ジェイムズはそれを「ポーザー・サンドイッチ」と呼んだんだぜ！","'NEVER WIMP OUT.' Writing it on my bedroom door. Dad can read it every morning.":"「絶対に日和らない」。部屋のドアに書いとく。親父が毎朝読めるようにな。","SEATS?! Wild! But you know the code — somebody falls, everybody lifts. True metalhead, Tokyo!":"椅子席？！すげえな！でも掟は分かってる——誰かが倒れたら皆で起こす。本物のメタルヘッドだ、トーキョー！","RAGE ON!!! Best pen pal in the WORLD. \\m/":"荒れ狂え！！！世界一のペンパルだ。\\m/","BEGINNERS?! Does this ad say 'beginners welcome'?! It says SERIOUS ONLY! Look comes LAST, man!":"初心者？！この広告のどこに「初心者歓迎」って書いてある？！「本気の方のみ」だ！見た目は最後だ！","'The MUSIC is a must.' HA! That's going on our first album. Metal first. ALWAYS.":"「音楽が必須」。ハッ！それ、俺たちの1stアルバムに入れるぜ。メタルが先。いつだってな。","FIRST GENERATION?! And no empty minutes?! You are a PROFESSIONAL! My tape deck thanks you!":"一次ダビング？！しかも空白なし？！プロだな！うちのテープデッキが感謝してるぜ！","Old deck... OK, OK. CASBAH is RAW anyway! But clean the heads, Tokyo!":"古いデッキか…まあいい。CASBAHはどうせ生々しい音だ！でもヘッドは掃除してくれよ、トーキョー！","EXACTLY! Demo = trade. Album = buy! That is how we support the underground! You are wise, Tokyo.":"その通り！デモは交換、アルバムは買う！それが地下シーンの支え方だ！賢いな、トーキョー。","STAY HARDCORE!! You already write like a 'zine veteran!! Issue #3 will be LEGENDARY!":"硬派であれ！！もうzineのベテランみたいな書きっぷりだ！！第3号は伝説になるぞ！"});
+Object.assign(REACT_JP,{"41?! They TRASHED the THRASH?! ...OK, OK. Killing Is My Business DOES sound like a garage. But Peace Sells is a WAR MACHINE. Tell BURRN! to listen AGAIN!":"41点？！スラッシュをゴミ扱い(トラッシュ)したのか？！…まあ、まあな。『Killing Is My Business』は確かにガレージで録ったみたいな音だ。でもPeace Sellsは戦闘マシンだ。BURRN!にもう一回聴けって言っとけ！","That BASS INTRO! Ellefson rules. It's the part my dad hates MOST. Perfect.":"あのベースのイントロ！エレフソン最高。親父が一番嫌いなパートだ。完璧だな。","41 POINTS?! You let a MAGAZINE pick your records?! Use your OWN ears, Tokyo! A number can't headbang for you!":"41点？！雑誌にレコードを選ばせてるのか？！自分の耳を使え、トーキョー！数字はお前の代わりに頭を振っちゃくれないぞ！"});
+Object.assign(REACT_JP,{"STICKERS?! My binder is READY! 'Sweat, noise, no mercy' — that goes on the cover of issue #3!":"ステッカー？！バインダーの準備はできてる！「汗、轟音、容赦なし」——それ、第3号の表紙に載せる！","58?! For BONDED BY BLOOD?! Your magazine needs a LESSON IN VIOLENCE! ...But you judged with your OWN ears. True trader, Tokyo!":"58点？！Bonded by Bloodに？！その雑誌には「暴力の教訓」が必要だな！…でも君は自分の耳で判断した。本物のトレーダーだ、東京！","An ALBUM?! Remember the code: albums we BUY! ...OK. ONE song at the end of your next tape. A trailer. Then you BUY it.":"アルバムを？！掟を忘れたか：アルバムは買うもの！…わかった。次のテープの最後に1曲だけ入れる。予告編だ。そしたら買えよ。","A BIBLE MOVIE?! Look at the cover, Tokyo — a good baby and an EVIL baby, joined at the hip! This is Kirk Hammett's first band, man!":"聖書の映画？！ジャケットを見ろ、東京——天使の赤ん坊と悪魔の赤ん坊が腰でつながってるんだぞ！カーク・ハメットが最初に組んだバンドだ！"});
 const reactJp=t=>REACT_JP[t.replace(/«|»/g,'')]||'';
 
 /* ====================================================== */
 const PILLAR_LABEL={1:'常套句',2:'絶叫MC',3:'暗黒語彙',4:'破格文法',5:'80s常識'};
 const MATERIAL={
   1:{base:['#7A4A1E','#5C3410','#8F5B26'],swirl:'#2E1A08',foil:['#6E5313','#F6DE8D','#B98F1F','#FFF4C2','#8C6A16']},
-  2:{base:['#EDE9E0','#D8D2C4','#F7F4EC'],swirl:'#B9B2A2',foil:['#6E6E74','#F4F4F8','#A9A9B2','#FFFFFF','#7E7E86']},
+  2:{base:['#EDE9E0','#D8D2C4','#F7F4EC'],swirl:'#B9B2A2',foil:['#121216','#3A3A44','#0B0B0E','#4C4C58','#1A1A20']},
   3:{base:['#17130F','#0B0908','#241E18'],swirl:'#3A2F22',foil:['#6E5313','#F6DE8D','#B98F1F','#FFF4C2','#8C6A16']},
   5:{base:['#1C3550','#11233A','#2A4A6C'],swirl:'#0A1626',foil:['#6E6E74','#F4F4F8','#A9A9B2','#FFFFFF','#7E7E86']},
   4:{base:['#7E1620','#5A0E15','#98212C'],swirl:'#3B060B',foil:['#6E5313','#F6DE8D','#B98F1F','#FFF4C2','#8C6A16']},
@@ -16717,9 +16776,13 @@ const PICK_PATH='M92 18 C110 13 190 13 208 18 C252 28 286 62 284 126 C282 198 22
 
 let masterIndex=new Map();
 function normTerm(s){return (s??'').trim().toLowerCase().replace(/[!?.,]/g,'').replace(/\s+/g,' ')}
-const GLOSS_RAW={"saxophone solo":"サックスソロ。80年代ポップのバラードの定番。メタルのソロはギターの領分","mosh pit":"モッシュピット(ステージ前で客がぶつかり合う場所)","distortion":"ディストーション(音を歪ませる効果。メタルの音の土台)","Sunset Strip":"サンセット・ストリップ(L.A.のライブハウス街。80年代メタルの聖地)","greatest hits":"ベスト盤。メタルヘッドはオリジナルアルバムを買う","sing it back to you":"(客が)歌を歌い返してくる。大合唱になる","No time wasters":"冷やかしお断り(time waster=人の時間を無駄にする奴)","roadie":"ローディー(ツアーの機材運搬・設営スタッフ)","setlist":"セットリスト(曲順表。ステージ床にガムテで貼る)","radio-friendly":"ラジオ向き＝売れ線。メタル界では悪口","poser":"ポーザー(格好だけの偽メタル。最大級の侮辱)","Backstage":"楽屋・舞台裏","leather jacket":"革ジャン(80年代メタルの制服)","tour bus":"ツアーバス(バンドが寝泊まりして移動するバス)","SYNTH-POP":"シンセポップ(80年代前半に流行したシンセ主体のポップ。メタルの宿敵)","the Dickinson special":"Iron Maidenのブルース・ディッキンソンの十八番。都市名を叫んで客を煽る","legendary live albums":"伝説のライブ盤。Deep Purple『Made in Japan』(1972)とCheap Trick『at Budokan』(1978)はどちらも日本録音","ballad":"バラード(アルバムに1曲だけ入れる泣きの曲)","soundcheck":"サウンドチェック(本番前の音出し確認)","restring":"弦を張り替える","Pop quiz":"抜き打ちテスト","kills":"殺す→(俗)圧倒的に最高だ","dressing room":"楽屋","encore":"アンコール","house lights":"客電(客席の照明。点いたら終演の合図)","Doors open":"開場(Doors＝開場時刻。チケットの定番表記)","Break a leg":"頑張って(舞台人の幸運祈願の決まり文句。直訳は「脚を折れ」)","Master of Puppets":"Metallicaの3rdアルバム(1986)","turntable":"レコードプレーヤー(のターンテーブル)","unplugged":"アンプを通さない生音。メタル的には論外","Rainbow":"リッチー・ブラックモア率いるバンド。Since You Been Goneは1979年のヒット曲","power ballad":"パワーバラード(80年代メタルの泣きの売れ線)","still of the night":"Whitesnakeの1987年の曲「Still of the Night」から","Coverdale":"デイヴィッド・カヴァーデイル(Whitesnakeのボーカル)","pyro":"パイロ(ステージの火薬・炎の演出)","OBI":"帯(日本盤LPの紙の帯。海外マニアの憧れ)","Meatloaf":"ミートローフ(米国の家庭料理)。歌手Meat Loafは『地獄のロック・ライダー』(1977)で有名","\\m/":"メロイック・サイン(人差し指と小指を立てるメタルの角サイン)の顔文字","Infl":"Influences(影響源)の略。メン募広告の定番","transport":"移動手段。車持ち＝機材を運べるという意味","audition":"オーディション","galloping":"ギャロップ(馬が駆けるような「ダダダン」のリズム。Iron Maidenの代名詞)","The Number of the Beast":"Iron Maidenの1982年作(邦題『魔力の刻印』)","Flying V":"フライングV(V字型ギター。メタルの象徴)","Marshall stack":"マーシャルのアンプヘッド＋キャビネット2段積み。爆音の象徴","Read my lips":"よく聞け(唇の動きを読め＝はっきり言うぞ)","liquor store":"酒屋(アメリカの街角の酒屋)","demo tape":"デモテープ(バンド自主制作の音源)","mime along":"当て振りする(音に合わせて弾くふりをする)","umlaut":"ウムラウト(Ö・Üの点々)。Blue Öyster CultやMotörheadに始まる「メタル・ウムラウト」","Bathory":"スウェーデンのバンド(1984年デビュー)。ブラックメタルの源流の一つ","Celtic Frost":"スイスのバンド。暗黒スラッシュの先駆者","Kreator":"ドイツのスラッシュメタル・バンド","CASBAH":"東京のスラッシュメタル・バンド。80年代からライブハウスで活動","OUTRAGE":"名古屋のスラッシュメタル・バンド","SABBAT":"日本のアンダーグラウンド・メタルバンド","chrome":"クロームテープ(ハイポジション/TypeⅡ)。高音がよく出るのでダビングの定番","C-60":"60分カセット(片面30分)","C-90":"90分カセット。テープが薄く、伸びたり絡まったりしやすい","deck":"カセットデッキ","trader":"トレーダー(テープを郵送で交換し合う仲間)","Death":"フロリダのバンド。デモテープのトレードで名を広めた、デスメタル草創期の代表格","No Life 'til Leather":"Metallicaの1982年のデモテープ。トレードで世界中に広まった伝説の音源","Dolby OFF":"ノイズリダクションを切って録音。相手のデッキにDolbyがないと音がこもるので、海外トレードではOFFが礼儀","first-generation":"一次ダビング(マスターから直接コピー)。コピーを重ねるほど音が劣化するので世代数が価値を決めた","normal position":"ノーマルテープ(TypeⅠ)。安いが高音が弱い","Photocopied":"コピー機で複製した。zineはコピー機文化","Morbid Tales":"Celtic Frostの1984年のデビュー作","Endless Pain":"Kreatorの1985年のデビュー作","Airmail":"航空便。国際郵便は高かった","Bonded by Blood":"Exodusの1985年のデビュー作。ベイエリア・スラッシュの名盤","live house":"ライブハウス。実は和製英語で、英語ではclubやsmall venue","rips":"すごい・最高(rip＝切り裂く→俗に「ぶちかます」)"};
+const GLOSS_RAW={"bay area":"ベイエリア(サンフランシスコ湾岸)。80年代前半にスラッシュの本場になった","grabbed":"かっさらった(grab＝ひっつかむ)。カーク・ハメットは1983年にExodusからMetallicaへ","import":"輸入盤。国内盤が出る前に西新宿の輸入盤店で買うのが当時の常識","ride the lightning":"Metallicaの2nd(1984)。1曲目は「Fight Fire with Fire」","chills":"ゾクッとする感覚(give me chills＝鳥肌が立つ)","a lesson in violence":"『Bonded by Blood』A面4曲目。「暴力の教訓」","joined at the hip":"腰でつながった(双子)＝切っても切れない。ジャケットは天使と悪魔の結合双生児の赤ん坊","mustaine":"デイヴ・ムステイン。Metallicaの初代リードギター。1983年に解雇され、Megadethを結成","mechanix":"ムステイン作の曲。Metallicaは歌詞と編曲を変えて「The Four Horsemen」(邦題「電撃の騎士」)にした","faster and meaner":"より速く、より凶悪に(mean＝意地悪な→メタルでは褒め言葉)","peace sells... but who's buying?":"Megadethの2ndアルバム(1986年11月)。「平和は売り物、でも誰が買う？」","trashed":"酷評した(trash＝ゴミ扱いする。thrashと語呂が近い。1985年のBURRN!はMegadethのデビュー作に41点)","headbang":"ヘッドバンギングする(動詞)","production":"音作り・録音の仕上がり(プロダクション)","bass intro":"ベースのイントロ。「Peace Sells」はベースのリフで始まる","ellefson":"デイヴィッド・エレフソン。Megadethのベーシスト","fast and brutal":"速くて激しい(brutal＝残忍な→メタルでは「容赦なく激しい」という褒め言葉)","No synths":"シンセお断り(80年代メタルの生演奏主義)","hell yes":"「当然だ！」の強調形。80年代の誌面にある形(Hell yeahは当時の誌面に見当たらない)","hello, fukuoka!":"都市名の言い間違い。1985年4月、名古屋公演で実際にあった(BURRN!誌)","thrash 'til death":"死ぬまでスラッシュ(1985〜86年の誌面に実在する合言葉)","metal rules":"メタル最高！(〜 rules=〜が最高。1986年のBURRN!誌も解説した定番)","rage on":"荒れ狂い続けろ(1987年の米国ファンジンにある締め)","hardcore metal":"ハードコア・メタル。1985年前後の欧州と日本で、スラッシュ/スピード/ブラックをまとめた呼び名","hell yezzz":"Hell yesを伸ばした綴り。ノルウェーのファンジン編集長Metalionの口癖","fear and destruction":"CASBAHの最初のライブデモ(1985年6月、1,000本)","infernal death":"フロリダのバンドDeathの1985年のデモ","black thrash wishes":"ブラック・スラッシュな祝福を(1985年のデンマークのファンジンにある手紙の締め)","support the underground":"地下シーンを支えろ(1987年のノルウェーのファンジンにも)","mosh":"モッシュ。1986〜87年に広まった新語(それまではslam dancing)","into":"be into＝〜にハマっている(1986年のBURRN!誌も解説した定番語)","saxophone solo":"サックスソロ。80年代ポップのバラードの定番。メタルのソロはギターの領分","mosh pit":"モッシュピット(ステージ前で客がぶつかり合う場所)","distortion":"ディストーション(音を歪ませる効果。メタルの音の土台)","Sunset Strip":"サンセット・ストリップ(L.A.のライブハウス街。80年代メタルの聖地)","greatest hits":"ベスト盤。メタルヘッドはオリジナルアルバムを買う","sing it back to you":"(客が)歌を歌い返してくる。大合唱になる","No time wasters":"冷やかしお断り(time waster=人の時間を無駄にする奴)","roadie":"ローディー(ツアーの機材運搬・設営スタッフ)","setlist":"セットリスト(曲順表。ステージ床にガムテで貼る)","radio-friendly":"ラジオ向き＝売れ線。メタル界では悪口","poser":"ポーザー(格好だけの偽メタル。最大級の侮辱)","Backstage":"楽屋・舞台裏","leather jacket":"革ジャン(80年代メタルの制服)","tour bus":"ツアーバス(バンドが寝泊まりして移動するバス)","SYNTH-POP":"シンセポップ(80年代前半に流行したシンセ主体のポップ。メタルの宿敵)","the Dickinson special":"Iron Maidenのブルース・ディッキンソンの十八番。都市名を叫んで客を煽る","legendary live albums":"伝説のライブ盤。Deep Purple『Made in Japan』(1972)とCheap Trick『at Budokan』(1978)はどちらも日本録音","ballad":"バラード(アルバムに1曲だけ入れる泣きの曲)","soundcheck":"サウンドチェック(本番前の音出し確認)","restring":"弦を張り替える","Pop quiz":"抜き打ちテスト","kills":"殺す→(俗)圧倒的に最高だ","dressing room":"楽屋","encore":"アンコール","house lights":"客電(客席の照明。点いたら終演の合図)","Doors open":"開場(Doors＝開場時刻。チケットの定番表記)","Break a leg":"頑張って(舞台人の幸運祈願の決まり文句。直訳は「脚を折れ」)","Master of Puppets":"Metallicaの3rdアルバム(1986)","turntable":"レコードプレーヤー(のターンテーブル)","unplugged":"アンプを通さない生音。メタル的には論外","Rainbow":"リッチー・ブラックモア率いるバンド。Since You Been Goneは1979年のヒット曲","power ballad":"パワーバラード(80年代メタルの泣きの売れ線)","still of the night":"Whitesnakeの1987年の曲「Still of the Night」から","Coverdale":"デイヴィッド・カヴァーデイル(Whitesnakeのボーカル)","pyro":"パイロ(ステージの火薬・炎の演出)","OBI":"帯(日本盤LPの紙の帯。海外マニアの憧れ)","Meatloaf":"ミートローフ(米国の家庭料理)。歌手Meat Loafは『地獄のロック・ライダー』(1977)で有名","\\m/":"メロイック・サイン(人差し指と小指を立てるメタルの角サイン)の顔文字","Infl":"Influences(影響源)の略。メン募広告の定番","transport":"移動手段。車持ち＝機材を運べるという意味","audition":"オーディション","galloping":"ギャロップ(馬が駆けるような「ダダダン」のリズム。Iron Maidenの代名詞)","The Number of the Beast":"Iron Maidenの1982年作(邦題『魔力の刻印』)","Flying V":"フライングV(V字型ギター。メタルの象徴)","Marshall stack":"マーシャルのアンプヘッド＋キャビネット2段積み。爆音の象徴","Read my lips":"よく聞け(唇の動きを読め＝はっきり言うぞ)","liquor store":"酒屋(アメリカの街角の酒屋)","demo tape":"デモテープ(バンド自主制作の音源)","mime along":"当て振りする(音に合わせて弾くふりをする)","umlaut":"ウムラウト(Ö・Üの点々)。Blue Öyster CultやMotörheadに始まる「メタル・ウムラウト」","Bathory":"スウェーデンのバンド(1984年デビュー)。ブラックメタルの源流の一つ","Celtic Frost":"スイスのバンド。暗黒スラッシュの先駆者","Kreator":"ドイツのスラッシュメタル・バンド","CASBAH":"東京のスラッシュメタル・バンド。80年代からライブハウスで活動","OUTRAGE":"名古屋のスラッシュメタル・バンド","SABBAT":"日本のアンダーグラウンド・メタルバンド","chrome":"クロームテープ(ハイポジション/TypeⅡ)。高音がよく出るのでダビングの定番","C-60":"60分カセット(片面30分)","C-90":"90分カセット。テープが薄く、伸びたり絡まったりしやすい","deck":"カセットデッキ","trader":"トレーダー(テープを郵送で交換し合う仲間)","Death":"フロリダのバンド。デモテープのトレードで名を広めた、デスメタル草創期の代表格","No Life 'til Leather":"Metallicaの1982年のデモテープ。トレードで世界中に広まった伝説の音源","Dolby OFF":"ノイズリダクションを切って録音。相手のデッキにDolbyがないと音がこもるので、海外トレードではOFFが礼儀","first-generation":"一次ダビング(マスターから直接コピー)。コピーを重ねるほど音が劣化するので世代数が価値を決めた","normal position":"ノーマルテープ(TypeⅠ)。安いが高音が弱い","Photocopied":"コピー機で複製した。zineはコピー機文化","Morbid Tales":"Celtic Frostの1984年のデビュー作","Endless Pain":"Kreatorの1985年のデビュー作","Airmail":"航空便。国際郵便は高かった","Bonded by Blood":"Exodusの1985年のデビュー作。ベイエリア・スラッシュの名盤","live house":"ライブハウス。実は和製英語で、英語ではclubやsmall venue","rips":"すごい・最高(rip＝切り裂く→俗に「ぶちかます」)"};
 const GLOSS=new Map(Object.entries(GLOSS_RAW).map(([k,v])=>[normTerm(k),v]));
 const glossOf=t=>GLOSS.get(normTerm(t))||null;
+/* 全シナリオのbeat.vocabを横断した語釈(選択肢・反応内の語も引けるように) */
+const ALLVOCAB=new Map();
+for(const sc of Object.values(SCENARIOS)) for(const bt of sc.beats) for(const [k,v] of Object.entries(bt.vocab||{})) if(!ALLVOCAB.has(normTerm(k))) ALLVOCAB.set(normTerm(k),v);
+const hintOf=t=>glossOf(t)||ALLVOCAB.get(normTerm(t))||null;
 const ORIGIN_EXTRA=new Map(Object.entries({"since you been gone":"Rainbow「Since You Been Gone」（『Down to Earth』1979）"}).map(([k,v])=>[normTerm(k),v]));
 function originText(m){
   const o=m&&m.origin; if(!o) return '';
@@ -16910,7 +16973,7 @@ function addNpcReact(text,done){
    HTML構造(語彙span/改行)を保ったまま、テキストノード単位で1文字ずつ復元。
    全文訳(.jp)は打了後に表示。タップで即全文。reduced-motionは即時。 */
 function typeInto(bubble,done){
-  const finishOnce=()=>{ if(fin)return; fin=true;
+  const finishOnce=(ev)=>{ if(ev&&ev.stopPropagation) ev.stopPropagation(); if(fin)return; fin=true;
     clearInterval(timer);clearTimeout(startT);
     nodes.forEach(n=>n.node.textContent=n.full);
     cursor.remove();
@@ -16960,7 +17023,7 @@ function playBeat(){
   /* 遭遇語彙を記録 */
   for(const [t,hint] of Object.entries(beat.vocab||{})) if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:glossOf(t)||hint});
   beat.npc.forEach(l=>(l.match(/«(.+?)»/g)||[]).forEach(m=>{const t=m.replace(/«|»/g,'');
-    if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:glossOf(t)||(beat.vocab||{})[t]||null});}));
+    if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:glossOf(t)||(beat.vocab||{})[t]||hintOf(t)});}));
   $('choices').innerHTML='';
   const typing=document.createElement('div');typing.className='typing';typing.textContent='入力中';
   $('msgs').appendChild(typing);scrollBottom();
@@ -17001,9 +17064,9 @@ function renderChoices(beat){
       if(q<0&&(!worst||q<worst.q)) worst={q,choice:c.t.replace(/«|»/g,''),react:c.react.replace(/«|»/g,'')};
       /* 選んだ返答と反応内の«»語彙も記録 */
       (c.t.match(/«(.+?)»/g)||[]).forEach(m=>{const t=m.replace(/«|»/g,'');
-        if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:glossOf(t)});});
+        if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:hintOf(t)});});
       (c.react.match(/«(.+?)»/g)||[]).forEach(m=>{const t=m.replace(/«|»/g,'');
-        if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:glossOf(t)});});
+        if(!seen.has(normTerm(t))) seen.set(normTerm(t),{term:t,hint:hintOf(t)});});
     };
     box.appendChild(b);
   });
@@ -17029,21 +17092,47 @@ document.addEventListener('click',(ev)=>{
   if(!v) return;
   const term=v.dataset.term;
   const key=normTerm(term);
-  const m=resolveTerm(term);
-  const pillar=m?m.pillar:1;
-  const fromSeen=seen.get(key);
-  
-  const hint=glossOf(term)||(fromSeen&&fromSeen.hint)||null;
-  $('popSvg').innerHTML=hint&&glossOf(term)?miniPickSVG(term,5):miniPickSVG(m?m.term:term,pillar);
-  $('popMeaning').textContent=hint||(m?m.meaning_jp:'(辞書準備中)');
-  const note=glossOf(term)?'':(m?(m.metal_note||''):'');
   const exactM=masterIndex.get(key);
+  const m=exactM||resolveTerm(term);
+  const fromSeen=seen.get(key);
+  const hint=hintOf(term)||(fromSeen&&fromSeen.hint)||null;
+  let svg,meaning,note='';
+  if(glossOf(term)){ svg=miniPickSVG(term,5); meaning=glossOf(term); }
+  else if(exactM){ svg=miniPickSVG(exactM.term,exactM.pillar); meaning=hint||exactM.meaning_jp; note=exactM.metal_note||''; }
+  else if(hint){ svg=miniPickSVG(term,5); meaning=hint; }            /* 部分一致で別の語の見出しに吸われないように */
+  else if(m){ svg=miniPickSVG(m.term,m.pillar); meaning=m.meaning_jp; note=m.metal_note||''; }
+  else { svg=miniPickSVG(term,1); meaning='(辞書準備中)'; }
+  $('popSvg').innerHTML=svg;
+  $('popMeaning').textContent=meaning;
   const org=ORIGIN_EXTRA.get(key)||originText(exactM);
   $('popNote').innerHTML=esc(note)+(org?(note?'<br>':'')+'<span class="origin">由来：'+esc(org)+'</span>':'');
   $('pickpop').classList.add('open');
   seScratch();
 });
 $('pickpop').onclick=()=>$('pickpop').classList.remove('open');
+
+/* ---------- 吹き出しタップ → 全画面リーダー ---------- */
+function openBubbleFull(bubble){
+  const msg=bubble.closest('.msg'); const s=SCENARIOS[scKey];
+  const clone=bubble.cloneNode(true);
+  clone.querySelectorAll('.type-cursor').forEach(n=>n.remove());
+  const jp=clone.querySelector('.jp'); const jpText=jp?jp.textContent:''; if(jp) jp.remove();
+  $('bfWho').textContent=msg.classList.contains('me')?'YOU｜あなた':(s.npc||'').toUpperCase();
+  $('bfEn').innerHTML=clone.innerHTML;
+  $('bfJp').textContent=jpText; $('bfJp').style.display=jpText?'':'none';
+  $('bfSheet').scrollTop=0;
+  $('bubfull').classList.add('open');
+}
+const closeBubbleFull=()=>$('bubfull').classList.remove('open');
+$('msgs').addEventListener('click',(ev)=>{
+  if(ev.target.closest('.vocab')) return;              /* 下線語はピック辞書を優先 */
+  const b=ev.target.closest('.msg:not(.sys) .bubble'); if(!b) return;
+  if(b.querySelector('.type-cursor')) return;           /* 文字送り中のタップは全文表示のみ */
+  if(window.getSelection&&String(window.getSelection()).length>0) return;
+  openBubbleFull(b);
+});
+$('bubfull').addEventListener('click',(ev)=>{ if(ev.target.closest('.vocab')) return; closeBubbleFull(); });
+document.addEventListener('keydown',(ev)=>{ if(ev.key==='Escape'){ if($('pickpop').classList.contains('open')) $('pickpop').classList.remove('open'); else closeBubbleFull(); } });
 
 /* ---------- エンディング+復習仕分け ---------- */
 const store={
@@ -17073,7 +17162,7 @@ function endGame(){
     const m=masterIndex.get(normTerm(term));
     const id=m?m.id:('TSUME:'+normTerm(term));
     const gl=glossOf(term);
-    const item={id:gl?('GLOSS:'+normTerm(term)):id,term:gl?term:(m?m.term:term),meaning:gl||(m?m.meaning_jp:(hint||'')),
+    const item={id:gl?('GLOSS:'+normTerm(term)):id,term:gl?term:(m?m.term:term),meaning:gl||(m&&m.meaning_jp)||hint||hintOf(term)||'',
       note:gl?'':(m?(m.metal_note||''):''),pillar:gl?5:(m?m.pillar:1),row:null,
       origin:ORIGIN_EXTRA.get(normTerm(term))||(gl?'':originText(m))};
     const row=document.createElement('div');row.className='recap-item';item.row=row;
@@ -17142,8 +17231,9 @@ async function renderEndExtras(rankKey,pct){
   const s=SCENARIOS[scKey];
   const mg=$('meigen');
   if(worst){
-    $('mgYou').textContent='あなた「'+worst.choice+'」';
-    $('mgNpc').textContent=s.npc.split(' ')[0]+'「'+worst.react+'」';
+    const jy=diff==='nurume'?choiceJp(worst.choice):'', jn=diff==='nurume'?reactJp(worst.react):'';
+    $('mgYou').innerHTML=esc('あなた「'+worst.choice+'」')+(jy?'<small class="mg-jp">'+esc(jy)+'</small>':'');
+    $('mgNpc').innerHTML=esc(s.npc.split(' ')[0]+'「'+worst.react+'」')+(jn?'<small class="mg-jp">'+esc(jn)+'</small>':'');
     mg.style.display='';
   } else mg.style.display='none';
   const quote=rankKey==='true'?'"You\'re one of us!"':rankKey==='ok'?'"Not bad, kid."':'"Wimps and posers, leave the hall!"';
